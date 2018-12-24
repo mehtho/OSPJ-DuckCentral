@@ -1,0 +1,43 @@
+﻿<Page x:Class="DuckPond.Pages.Alerts"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DuckPond.Pages"
+      xmlns:wpfTool="http://schemas.xceed.com/wpf/xaml/toolkit"
+      mc:Ignorable="d" 
+      d:DesignHeight="685" d:DesignWidth="1050"
+      Title="Alerts">
+
+    <Grid Background="White" Height="685" Width="1050">
+        <DataGrid x:Name="EventsTable" IsReadOnly="True" HorizontalAlignment="Left" Height="474" Margin="10,52,0,0" VerticalAlignment="Top" Width="780" AutoGenerateColumns="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="ColSeverity" Header="Severity" Width="80"/>
+                <DataGridTextColumn x:Name="ColMessage" Header="Message" Width="150"/>
+                <DataGridTextColumn x:Name="ColGUID" Header="GUID" Width="150"/>
+                <DataGridTextColumn x:Name="ColIP" Header="IP" Width="150"/>
+                <DataGridTextColumn x:Name="ColDate" Header="Date" Width="150"/>
+                <DataGridTextColumn x:Name="ColCode" Header="Alert Code" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Label x:Name="PageName" Content="Duckpond: Alerts" HorizontalAlignment="Left" Margin="761,633,0,0" VerticalAlignment="Top" FontSize="24" Width="280" FontFamily="Noto Sans"/>
+        <wpfTool:DateTimePicker x:Name="FilterDate1" HorizontalAlignment="Left"  Margin="798,374,0,0" VerticalAlignment="Top" Width="236" Format="Custom" FormatString="dd/MMM/yyyy hh:mm:ss tt"/>
+        <wpfTool:DateTimePicker x:Name="FilterDate2" HorizontalAlignment="Left"  Margin="798,411,0,0" VerticalAlignment="Top" Width="236" Format="Custom" FormatString="dd/MMM/yyyy hh:mm:ss tt"/>
+        <TextBox x:Name="FilterGUID" HorizontalAlignment="Left" Height="24" Margin="798,259,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="BtnSearch" Content="Search" HorizontalAlignment="Left" Margin="798,517,0,0" VerticalAlignment="Top" Width="74" Click="BtnSearch_Click" />
+        <TextBox x:Name="FilterAlertCode" HorizontalAlignment="Left" Height="23" Margin="798,468,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label Content="Filters:" HorizontalAlignment="Left" Margin="791,55,0,0" VerticalAlignment="Top" Width="102"/>
+        <Label Content="Date Between:" HorizontalAlignment="Left" Margin="798,346,0,0" VerticalAlignment="Top" Width="102"/>
+        <Label Content="GUID" HorizontalAlignment="Left" Margin="798,228,0,0" VerticalAlignment="Top" Width="102"/>
+        <Label Content="Alert Code:" HorizontalAlignment="Left" Margin="798,437,0,0" VerticalAlignment="Top" Width="102"/>
+        <TextBox x:Name="FilterMessage" HorizontalAlignment="Left" Height="24" Margin="798,199,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label Content="Message" HorizontalAlignment="Left" Margin="798,168,0,0" VerticalAlignment="Top" Width="102"/>
+        <TextBox x:Name="FilterIP" HorizontalAlignment="Left" Height="24" Margin="798,318,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+        <Label Content="IP Address" HorizontalAlignment="Left" Margin="798,287,0,0" VerticalAlignment="Top" Width="102"/>
+        <CheckBox x:Name="BtnL0" Content="0: Normal" HorizontalAlignment="Left" Margin="798,121,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="BtnL1" Content="1: Concern" HorizontalAlignment="Left" Margin="888,121,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="BtnL2" Content="2: Warning" HorizontalAlignment="Left" Margin="798,136,0,0" VerticalAlignment="Top"/>
+        <CheckBox x:Name="BtnL3" Content="3: Critical" HorizontalAlignment="Left" Margin="888,136,0,0" VerticalAlignment="Top"/>
+        <Label Content="Severity:" HorizontalAlignment="Left" Margin="792,86,0,0" VerticalAlignment="Top" Width="102"/>
+    </Grid>
+</Page>

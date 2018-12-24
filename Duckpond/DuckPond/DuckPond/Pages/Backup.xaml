@@ -1,0 +1,39 @@
+﻿<Page x:Class="DuckPond.Pages.Backup"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DuckPond.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="685" d:DesignWidth="1050"
+      Title="Backup">
+
+    <Grid Background="White" Height="685" Width="1050">
+        <Label x:Name="PageName" Content="Duckpond: Backups" HorizontalAlignment="Left" Margin="761,633,0,0" VerticalAlignment="Top" FontSize="24" Width="280" FontFamily="Noto Sans"/>
+        <DataGrid x:Name="ResultTable" HorizontalAlignment="Left" Height="475" Margin="31,99,0,0" VerticalAlignment="Top" Width="450" AutoGenerateColumns="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="ColDay" Header="Day" Width="150"/>
+                <DataGridTextColumn x:Name="ColType" Header="Type" Width="150"/>
+                <DataGridTextColumn x:Name="ColTime" Header="Time" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <DatePicker HorizontalAlignment="Left" Margin="571,189,0,0" VerticalAlignment="Top" Height="22"/>
+        <DatePicker HorizontalAlignment="Left" Margin="571,161,0,0" VerticalAlignment="Top" Height="22"/>
+        <TextBox HorizontalAlignment="Left" Height="22" Margin="571,248,0,0" TextWrapping="Wrap"   VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="BtnSearch_Copy" Content="Add" HorizontalAlignment="Left" Margin="571,534,0,0" VerticalAlignment="Top" Width="74"/>
+        <TextBox HorizontalAlignment="Left" Height="22" Margin="571,307,0,0" TextWrapping="Wrap"   VerticalAlignment="Top" Width="120"/>
+        <Label Content="New Entry:" HorizontalAlignment="Left" Margin="571,102,0,0" VerticalAlignment="Top" Width="102"/>
+        <Label Content="Day:" HorizontalAlignment="Left" Margin="571,133,0,0" VerticalAlignment="Top" Width="102" Height="24"/>
+        <Label Content="Type:" HorizontalAlignment="Left" Margin="571,216,0,0" VerticalAlignment="Top" Width="102"/>
+        <Label Content="Time:" HorizontalAlignment="Left" Margin="571,275,0,0" VerticalAlignment="Top" Width="102"/>
+        <Button x:Name="BackupLog" Content="Backup Log" HorizontalAlignment="Left" Margin="746,54,0,0" VerticalAlignment="Top" Width="74" Click="BackupLog_Click"/>
+        <Label Content="Weekly Backup Routine:" HorizontalAlignment="Left" Margin="31,56,0,0" VerticalAlignment="Top" Width="156"/>
+        <Label Content="Password:" HorizontalAlignment="Left" Margin="571,334,0,0" VerticalAlignment="Top" Width="102"/>
+        <PasswordBox HorizontalAlignment="Left" Margin="571,365,0,0" VerticalAlignment="Top" Width="150"/>
+        <Label Content="Confirm Password:" HorizontalAlignment="Left" Margin="571,391,0,0" VerticalAlignment="Top" Width="120"/>
+        <PasswordBox HorizontalAlignment="Left" Margin="571,422,0,0" VerticalAlignment="Top" Width="150"/>
+        <Label Content="Output Location:" HorizontalAlignment="Left" Margin="571,445,0,0" VerticalAlignment="Top" Width="102"/>
+        <TextBox HorizontalAlignment="Left" Height="22" Margin="571,476,0,0" TextWrapping="Wrap"   VerticalAlignment="Top" Width="120"/>
+        <Frame x:Name="Content_Frame" HorizontalAlignment="Left" Height="686" Margin="0,0,0,0" VerticalAlignment="Top" Width="1050" NavigationUIVisibility="Hidden"/>
+    </Grid>
+</Page>

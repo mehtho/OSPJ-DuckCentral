@@ -1,0 +1,21 @@
+﻿<Window x:Class="DuckPond.LoginScreen"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DuckPond"
+        mc:Ignorable="d"
+        Title="LoginScreen" Height="800" Width="1200">
+    <Grid>
+        <Label x:Name="Pagetitle" Content="Duck Pond" HorizontalAlignment="Left" Margin="-2,0,0,0" VerticalAlignment="Top" Width="1200" Height="65" FontFamily="Noto Sans" FontSize="36" Background="Goldenrod"/>
+        <TextBox x:Name="UsernameField" HorizontalAlignment="Left" Height="23" Margin="115,137,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="190" Cursor="Arrow" FontFamily="Noto Sans"/>
+        <PasswordBox x:Name="PasswordField" HorizontalAlignment="Left" Margin="115,226,0,0" VerticalAlignment="Top" Width="190"/>
+        <Label Content="Username" HorizontalAlignment="Left" Margin="30,133,0,0" VerticalAlignment="Top" Width="80" FontFamily="Noto Sans"/>
+        <Label Content="Password" HorizontalAlignment="Left" Margin="30,218,0,0" VerticalAlignment="Top" Width="63" FontFamily="Noto Sans"/>
+        <Button x:Name="LoginButton" Content="Submit" HorizontalAlignment="Left" Margin="115,291,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click" Background="Goldenrod"  FontFamily="Noto Sans"/>
+        <Label x:Name="AlertMessage" HorizontalAlignment="Left" Margin="988,26,0,0" VerticalAlignment="Top" Width="196" x:FieldModifier="public"/>
+        <Label x:Name="LoginFailText" Content="" HorizontalAlignment="Left" Margin="115,249,0,0" VerticalAlignment="Top" Background="{x:Null}" FontFamily="Noto Sans"/>
+        <Frame x:Name="Login" NavigationUIVisibility="Hidden"/>
+    </Grid>
+    
+</Window>

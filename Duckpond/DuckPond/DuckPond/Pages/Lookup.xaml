@@ -1,0 +1,32 @@
+﻿<Page x:Class="DuckPond.Pages.Lookup"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DuckPond.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="685" d:DesignWidth="1050"
+      Title="Lookup">
+
+    <Grid Background="White" Height="685" Width="1050">
+        <TextBox x:Name="SearchQuery" HorizontalAlignment="Left" Height="23" Margin="31,51,0,0" TextWrapping="Wrap" Text="MAC Address" VerticalAlignment="Top" Width="120"/>
+        <DataGrid x:Name="ResultTable" HorizontalAlignment="Left" Height="475" Margin="31,99,0,0" VerticalAlignment="Top" Width="500" AutoGenerateColumns="True" SelectionChanged="ResultTable_SelectionChanged">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="ColEvent" Header="Event" Width="200"/>
+                <DataGridTextColumn x:Name="ColDate" Header="Date" Width="150"/>
+                <DataGridTextColumn x:Name="ColType" Header="Event Code" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button x:Name="BtnSearch" Content="Search" HorizontalAlignment="Left" Margin="176,54,0,0" VerticalAlignment="Top" Width="74"/>
+        <Label x:Name="PageName" Content="Duckpond: Lookup" HorizontalAlignment="Left" Margin="761,633,0,0" VerticalAlignment="Top" FontSize="24" Width="280" FontFamily="Noto Sans"/>
+        <DatePicker HorizontalAlignment="Left" Margin="571,202,0,0" VerticalAlignment="Top"/>
+        <DatePicker HorizontalAlignment="Left" Margin="571,172,0,0" VerticalAlignment="Top"/>
+        <TextBox HorizontalAlignment="Left" Height="22" Margin="571,278,0,0" TextWrapping="Wrap"   VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="BtnSearch_Copy" Content="Search" HorizontalAlignment="Left" Margin="571,416,0,0" VerticalAlignment="Top" Width="74"/>
+        <TextBox HorizontalAlignment="Left" Height="22" Margin="571,356,0,0" TextWrapping="Wrap"   VerticalAlignment="Top" Width="120"/>
+        <Label Content="Filters:" HorizontalAlignment="Left" Margin="571,102,0,0" VerticalAlignment="Top" Width="102"/>
+        <Label Content="Date Between:" HorizontalAlignment="Left" Margin="571,142,0,0" VerticalAlignment="Top" Width="102"/>
+        <Label Content="Event:" HorizontalAlignment="Left" Margin="571,246,0,0" VerticalAlignment="Top" Width="102"/>
+        <Label Content="Event Code" HorizontalAlignment="Left" Margin="571,324,0,0" VerticalAlignment="Top" Width="102"/>
+    </Grid>
+</Page>

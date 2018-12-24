@@ -1,0 +1,27 @@
+﻿<Page x:Class="DuckPond.Pages.KnownHosts"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DuckPond.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="685" d:DesignWidth="1050"
+      Title="KnownHosts">
+
+    <Grid Background="White" Height="685" Width="1050">
+        <DataGrid x:Name="WhitelistTable" HorizontalAlignment="Left" Height="475" Margin="31,99,0,0" VerticalAlignment="Top" Width="771" AutoGenerateColumns="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="ColMac" Header="MAC Address" Width="200"/>
+                <DataGridTextColumn x:Name="ColIP" Header="IP Address" Width="150"/>
+                <DataGridTextColumn x:Name="ColVersion" Header="Running Version" Width="150"/>
+                <DataGridTextColumn x:Name="ColStatus" Header="Status" Width="150"/>
+                <DataGridTextColumn x:Name="ColDate" Header="Date Added" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Label Content="Last Updated: " HorizontalAlignment="Left" Margin="766,48,0,0" VerticalAlignment="Top" Width="119"/>
+        <Label x:Name="LastUpdated" Content="" HorizontalAlignment="Left" Margin="890,48,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnRefresh" Content="Refresh" HorizontalAlignment="Left" Margin="686,54,0,0" VerticalAlignment="Top" Width="75"/>
+        <Frame x:Name="Content_Frame" HorizontalAlignment="Left" Height="685" Margin="0,0,0,0" VerticalAlignment="Top" Width="1050" NavigationUIVisibility="Hidden"/>
+        <Label x:Name="PageName" Content="Duckpond: Known Hosts" HorizontalAlignment="Left" Margin="755,632,0,0" VerticalAlignment="Top" FontSize="24" Width="285" FontFamily="Noto Sans"/>
+    </Grid>
+</Page>
