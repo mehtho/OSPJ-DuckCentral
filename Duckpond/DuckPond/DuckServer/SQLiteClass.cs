@@ -109,5 +109,20 @@ namespace DuckPond
 
             return dtb;
         }
+
+        public void NewConnections(List<DatabaseObject> dbos)
+        {
+            using (SQLiteTransaction tr = m_dbConnection.BeginTransaction())
+            {
+                SQLiteCommand cmd = new SQLiteCommand("DELETE FROM BigDatabase", m_dbConnection);
+                cmd.ExecuteNonQuery();
+
+                foreach (DatabaseObject dbo in dbos)
+                {
+                    this.AddDatabase(dbo);
+                }
+                tr.Commit();
+            }
+        }
     }
 }

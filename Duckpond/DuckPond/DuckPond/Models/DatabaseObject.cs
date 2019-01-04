@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace DuckPond.Models
 {
-    class DatabaseObject
+    [Serializable]
+    public class DatabaseObject
     {
         public DatabaseObject()
         {

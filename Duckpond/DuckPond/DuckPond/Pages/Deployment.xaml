@@ -24,7 +24,6 @@
         <Button x:Name="BtnSearch" Content="Search" HorizontalAlignment="Left" Margin="176,54,0,0" VerticalAlignment="Top" Width="74"/>
         <Button x:Name="BtnUpdate" Content="Update Selected" HorizontalAlignment="Left" Margin="31,592,0,0" VerticalAlignment="Top" Width="104"/>
         <Button Content="Select All" HorizontalAlignment="Left" Margin="160,592,0,0" VerticalAlignment="Top" Width="74"/>
-        <Button x:Name="BtnKnownHosts" Content="Known Hosts" HorizontalAlignment="Left" Margin="703,50,0,0" VerticalAlignment="Top" Width="76" Click="BtnKnownHosts_Click"/>
         <Frame x:Name="Content_Frame" HorizontalAlignment="Left" Height="685" Margin="0,0,0,0" VerticalAlignment="Top" Width="1050" NavigationUIVisibility="Hidden"/>
         <Label x:Name="PageName" Content="Duckpond: Deployment" HorizontalAlignment="Left" Margin="761,633,0,0" VerticalAlignment="Top" FontSize="24" Width="280" FontFamily="Noto Sans"/>
         <DatePicker HorizontalAlignment="Left" Margin="580,200,0,0" VerticalAlignment="Top"/>

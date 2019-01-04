@@ -15,7 +15,8 @@
                 <DataGridTextColumn x:Name="ColConn" Header="Connection String" Width="770"/>
             </DataGrid.Columns>
         </DataGrid>
-        <Button x:Name="BtnAddRow" Content="Add Row" HorizontalAlignment="Left" Margin="924,40,0,0" VerticalAlignment="Top" Width="75" Click="BtnAddRow_Click"/>
-        <Button x:Name="BtnCommit" Content="Commit" HorizontalAlignment="Left" Margin="924,79,0,0" VerticalAlignment="Top" Width="75" Click="BtnCommit_Click"/>
+        <Button x:Name="BtnAddRow" Content="Add Item" HorizontalAlignment="Left" Margin="924,40,0,0" VerticalAlignment="Top" Width="75" Click="BtnAddRow_Click"/>
+        <Button x:Name="BtnCommit" Content="Commit" HorizontalAlignment="Left" Margin="924,125,0,0" VerticalAlignment="Top" Width="75" Click="BtnCommit_Click"/>
+        <Button x:Name="BtnRemoveRow" Content="Delete Item" HorizontalAlignment="Left" Margin="924,84,0,0" VerticalAlignment="Top" Width="75" Click="BtnRemoveRow_Click"/>
     </Grid>
 </Page>

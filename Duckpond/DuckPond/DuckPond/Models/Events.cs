@@ -15,7 +15,7 @@ namespace DuckPond.Models
         public String eventGUID;
         public DateTime eventDate;
 
-        public Events(String eCode, String eMessage, int eLevel, String eIP, String eGUID, DateTime eDate)
+        public Events(String eCode, String eMessage, int eLevel, String eIP, String eGUID, DateTime eDate, String eComment)
         {
             this.eventCode = eCode;
             this.eventMessage = eMessage;

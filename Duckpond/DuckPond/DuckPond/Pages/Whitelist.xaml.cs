@@ -56,7 +56,7 @@ namespace DuckPond.Pages
             {
                 WhitelistTable.Items.Add(new WLTableRow { Datetime = wl.Datetime1.ToString("dd/MMM/yyyy hh:mm:ss tt"), Pid = wl.Pid1, Vid = wl.Vid1, SerialNumber = wl.SerialNumber1, WhitelistID = wl.WhitelistID1 });
             }
-            ms.closeCon();
+            ms.CloseCon();
         }
 
         private void DoFilter()
@@ -79,7 +79,7 @@ namespace DuckPond.Pages
                 {
                     WhitelistTable.Items.Add(new WLTableRow { Datetime = wl.Datetime1.ToString("dd/MMM/yyyy hh:mm:ss tt"), Pid = wl.Pid1, Vid = wl.Vid1, SerialNumber = wl.SerialNumber1, WhitelistID = wl.WhitelistID1 });
                 }
-                ms.closeCon();
+                ms.CloseCon();
             }
             else
             {
@@ -115,7 +115,7 @@ namespace DuckPond.Pages
                     WhitelistTable.Items.Add(new WLTableRow { Datetime = wl.Datetime1.ToString("dd/MMM/yyyy hh:mm:ss tt"), Pid = wl.Pid1, Vid = wl.Vid1, SerialNumber = wl.SerialNumber1, WhitelistID = wl.WhitelistID1 });
                 }
 
-                ms.closeCon();
+                ms.CloseCon();
             }
         }
 
@@ -167,7 +167,7 @@ namespace DuckPond.Pages
                     MsgAddOne.Content = "Unknown Error";
                 }
 
-                ms.closeCon();
+                ms.CloseCon();
             }
         }
 

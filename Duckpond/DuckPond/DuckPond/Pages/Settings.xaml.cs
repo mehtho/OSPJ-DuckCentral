@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using DuckPond.Resources;
 
 namespace DuckPond.Pages
 {
@@ -21,67 +22,9 @@ namespace DuckPond.Pages
     /// </summary>
     public partial class Settings : Page
     {
-        DatabaseObject dtb1;
-        DatabaseObject dtb2;
-
         public Settings()
         {
             InitializeComponent();
-
-            SQLiteClass sql = new SQLiteClass();
-
-            dtb1 = sql.GetDatabase(1);
-            if (dtb1.ConnectionString != null)
-            {
-                if (dtb1.ConnectionString.Length >= 10)
-                    DBAddress1.Text = dtb1.ConnectionString.Substring(0, 10) + "...";
-            }
-
-            dtb2 = sql.GetDatabase(2);
-            if (dtb2.ConnectionString != null)
-            {
-                if (dtb2.ConnectionString.Length >= 10)
-                    DBAddress2.Text = dtb2.ConnectionString.Substring(0, 10) + "...";
-            }
-
-            sql.CloseCon();
-        }
-
-        private void BtnSetDB1_Click(object sender, RoutedEventArgs e)
-        {
-            if (DBAddress1.Text.Trim().Length!=0||!DBAddress1.Text.Equals(dtb1.ConnectionString.Substring(0, 10) + "..."))
-            {
-                DatabaseObject dtb = new DatabaseObject(DBAddress1.Text,1);
-
-                SQLiteClass sql = new SQLiteClass();
-                sql.SetDatabase(dtb);
-                sql.CloseCon();
-
-                ErrorDB1.Content = "Sucess!";
-            }
-            else
-            {
-                ErrorDB2.Content = "Please Enter a Connection String";
-            }
-
-        }
-
-        private void BtnSetDB2_Click(object sender, RoutedEventArgs e)
-        {
-            if (DBAddress2.Text.Trim().Length != 0 || !DBAddress2.Text.Equals(dtb2.ConnectionString.Substring(0, 10) + "..."))
-            {
-                DatabaseObject dtb = new DatabaseObject(DBAddress2.Text,2);
-
-                SQLiteClass sql = new SQLiteClass();
-                sql.SetDatabase(dtb);
-                sql.CloseCon();
-
-                ErrorDB2.Content = "Success!";
-            }
-            else
-            {
-                ErrorDB2.Content = "Please Enter a Connection String";
-            }
         }
 
         private void BtnChangePassword_Click(object sender, RoutedEventArgs e)
@@ -111,6 +54,23 @@ namespace DuckPond.Pages
             {
                 ErrorPassword.Content = "Incorrect Password";
             }
+        }
+
+        private void BtnChangeIPs_Click(object sender, RoutedEventArgs e)
+        {
+            String include = txtInclude.Text;
+            String exclude = txtExclude.Text;
+
+            List<String> ips = IPRange.RangeListStringToIPList(include);
+            ips = IPRange.ExcludeFromListString(ips,exclude);
+
+            foreach(String ip in ips)
+            {
+                Console.WriteLine(ip);
+            }
+
+            txtInclude.Text = "";
+            txtExclude.Text = "";
         }
     }
 }

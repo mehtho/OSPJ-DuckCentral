@@ -70,7 +70,7 @@ namespace DuckPond.Pages
                 }
                 EventsTable.Items.Add(new EVTableRow { Code = ev.eventCode, Date = ev.eventDate.ToString("dd/MMM/yyyy hh:mm:ss tt"), Message = ev.eventMessage, IP = ev.eventIP, GUID = ev.eventGUID, Severity = el});
             }
-            ms.closeCon();
+            ms.CloseCon();
         }
 
         private void BtnSearch_Click(object sender, RoutedEventArgs e)
@@ -116,7 +116,7 @@ namespace DuckPond.Pages
                     EventsTable.Items.Clear();
                     EventsTable.Items.Add(new EVTableRow { Code = ev.eventCode, Date = ev.eventDate.ToString("dd/MMM/yyyy hh:mm:ss tt"), Message = ev.eventMessage, IP = ev.eventIP, GUID = ev.eventGUID, Severity = el });
                 }
-                ms.closeCon();
+                ms.CloseCon();
             }
             else
             {
@@ -190,7 +190,7 @@ namespace DuckPond.Pages
                     EventsTable.Items.Add(new EVTableRow { Code = ev.eventCode, Date = ev.eventDate.ToString("dd/MMM/yyyy hh:mm:ss tt"), Message = ev.eventMessage, IP = ev.eventIP, GUID = ev.eventGUID, Severity = el });
                 }
 
-                ms.closeCon();
+                ms.CloseCon();
             }
         }
     }

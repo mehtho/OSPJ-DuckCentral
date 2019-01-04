@@ -37,6 +37,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
@@ -99,14 +102,19 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Debug.cs" />
+    <Compile Include="IMClient.cs" />
     <Compile Include="Main Menu.xaml.cs">
       <DependentUpon>Main Menu.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\DatabaseObject.cs" />
     <Compile Include="Models\Events.cs" />
     <Compile Include="Models\KnownHost.cs" />
+    <Compile Include="Models\ServicesObject.cs" />
     <Compile Include="Models\Whitelists.cs" />
     <Compile Include="MSSQL.cs" />
+    <Compile Include="Pages\AreYouSure.xaml.cs">
+      <DependentUpon>AreYouSure.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Alerts.xaml.cs">
       <DependentUpon>Alerts.xaml</DependentUpon>
     </Compile>
@@ -125,12 +133,19 @@
     <Compile Include="Pages\Lookup.xaml.cs">
       <DependentUpon>Lookup.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Databases.xaml.cs">
+      <DependentUpon>Databases.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Services.xaml.cs">
+      <DependentUpon>Services.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Settings.xaml.cs">
       <DependentUpon>Settings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Pages\Whitelist.xaml.cs">
       <DependentUpon>Whitelist.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Resources\IPRangeParser.cs" />
     <Compile Include="Resources\TextCleaner.cs" />
     <Compile Include="SQLiteClass.cs" />
     <Compile Include="UserData.cs" />
@@ -148,6 +163,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Main Menu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\AreYouSure.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -174,6 +193,14 @@
     <Page Include="Pages\Lookup.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\Databases.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Pages\Services.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Pages\Settings.xaml">
       <SubType>Designer</SubType>
@@ -202,6 +229,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="app.manifest">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

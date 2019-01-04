@@ -16,6 +16,9 @@
             <Button x:Name="BtnDeployment" Content="Deployment" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnDeployment_Click"/>
             <Button x:Name="BtnLookup" Content="Device Lookup" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnLookup_Click"/>
             <Button x:Name="BtnSettings" Content="Settings" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnSettings_Click"/>
+            <Button x:Name="BtnDatabases" Content="Manage Databases" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnDatabases_Click"/>
+            <Button x:Name="BtnServices" Content="Listening Services" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnService_Click"/>
+            <Button x:Name="BtnKnownHosts" Content="Clients" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnKnownHosts_Click"/>
         </StackPanel>
         <Frame x:Name="Content_Frame" HorizontalAlignment="Left" Height="685" Margin="150,0,0,0" VerticalAlignment="Top" Width="1050" NavigationUIVisibility="Hidden"/>
     </Grid>

@@ -22,28 +22,78 @@ namespace DuckPond
 
         public MSSQL()
         {
-            Directory.CreateDirectory(ProgramFilesx86()+"\\DuckServer");
-            SQLiteClass sqlite = new SQLiteClass(ProgramFilesx86()+"\\DuckServer\\Information.dat");
-                List<DatabaseObject> connections = sqlite.GetConnections();
+            Begin();
+        }
 
-                if (connections.Count > 0)
+        private void Begin()
+        {
+            Directory.CreateDirectory(ProgramFilesx86() + "\\DuckServer");
+            SQLiteClass sqlite = new SQLiteClass(ProgramFilesx86() + "\\DuckServer\\Information.dat");
+            List<DatabaseObject> connections = sqlite.GetConnections();
+
+            if (connections.Count > 0)
+            {
+                //Keep trying and save successful connection
+                foreach (DatabaseObject db in connections)
                 {
-                    foreach(DatabaseObject db in connections)
+                    cnn = new SqlConnection(db.ConnectionString);
+                    try
                     {
-                        cnn = new SqlConnection(db.ConnectionString);
+                        cnn.Open();
+                        cnn.Close();
                         connectedTo = db.Preference;
                         break;
                     }
+                    catch
+                    {
+                        //Write failure to log
+                    }
+
                 }
-                else
-                {
-                    //Write to events
-                } 
+            }
+            else
+            {
+                //Write to events
+            }
         }
 
-        public void closeCon()
+        public void CloseCon()
         {
             cnn.Close();
+        }
+
+        private bool OpenCon()
+        {
+            try
+            {
+                cnn.Open();
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+            catch (NullReferenceException)
+            {
+                return false;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.Message);
+                return false;
+            }
+        }
+
+        public static string ProgramFilesx86()
+        {
+            if (8 == IntPtr.Size
+                || (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
+            {
+                return Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            }
+
+            return Environment.GetEnvironmentVariable("ProgramFiles");
         }
 
         //Event Methods
@@ -57,34 +107,27 @@ namespace DuckPond
             cmd.CommandType = CommandType.Text;
             cmd.Connection = cnn;
 
-            try
+            if (!OpenCon())
             {
-                cnn.Open();
-                reader = cmd.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    Events ev = new Events(
-
-                        reader["code"].ToString(),
-                        reader["message"].ToString(),
-                        (int)reader["severity"],
-                        reader["IP"].ToString(),
-                        reader["GUID"].ToString(),
-                        (DateTime)reader["date"]);
-
-
-                    evs.Add(ev);
-                }
+                return new List<Events>();
             }
-            catch(System.Data.SqlClient.SqlException)
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
             {
-                //Write To Event Log("Error connecting to DB!");
+                Events ev = new Events(
+
+                    reader["code"].ToString(),
+                    reader["message"].ToString(),
+                    (int)reader["severity"],
+                    reader["IP"].ToString(),
+                    reader["GUID"].ToString(),
+                    (DateTime)reader["date"],
+                    reader["comment"].ToString());
+
+                evs.Add(ev);
             }
-            finally
-            {
-                cnn.Close();
-            }
+
 
             return evs;
         }
@@ -95,7 +138,7 @@ namespace DuckPond
             SqlCommand cmd = new SqlCommand();
             SqlDataReader reader;
 
-            String sqltxt = "SELECT * FROM dbo.Events a INNER JOIN dbo.eventdetails b ON a.code = b.code " + 
+            String sqltxt = "SELECT * FROM dbo.Events a INNER JOIN dbo.eventdetails b ON a.code = b.code " +
                 "WHERE Date BETWEEN @dt1 AND @dt2 ";
 
             if (!code.Equals(""))
@@ -110,11 +153,11 @@ namespace DuckPond
                 cmd.CommandText = sqltxt;
                 cmd.Parameters.AddWithValue("@message", "%" + message + "%");
             }
-            if (severity.Length>0)
+            if (severity.Length > 0)
             {
                 sqltxt += "AND severity IN(";
                 bool f = true;
-                foreach(int s in severity)
+                foreach (int s in severity)
                 {
                     if (f)
                     {
@@ -152,11 +195,14 @@ namespace DuckPond
 
             sqltxt += "ORDER BY a.Date desc";
 
-            cmd.CommandText = sqltxt; 
+            cmd.CommandText = sqltxt;
             cmd.CommandType = CommandType.Text;
             cmd.Connection = cnn;
 
-            cnn.Open();
+            if (!OpenCon())
+            {
+                return new List<Events>();
+            }
             reader = cmd.ExecuteReader();
 
             while (reader.Read())
@@ -168,7 +214,8 @@ namespace DuckPond
                     (int)reader["severity"],
                     reader["IP"].ToString(),
                     reader["GUID"].ToString(),
-                    (DateTime)reader["date"]);
+                    (DateTime)reader["date"],
+                    reader["comment"].ToString());
 
 
                 evs.Add(ev);
@@ -177,15 +224,25 @@ namespace DuckPond
             return evs;
         }
 
-        public static string ProgramFilesx86()
+        public void AddEvent(Events e)
         {
-            if (8 == IntPtr.Size
-                || (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
+            String q = "INSERT INTO dbo.Events (Code, IP, Date, GUID, Comment) Values (@cod, @I, @dat, @gui, @commen)";
+            SqlCommand comm = new SqlCommand(q, cnn);
+
+            comm.Parameters.AddWithValue("cod", e.eventCode);
+            comm.Parameters.AddWithValue("I", e.eventIP);
+            comm.Parameters.AddWithValue("dat", e.eventDate);
+            comm.Parameters.AddWithValue("gui", e.eventGUID);
+            if (e.comment != null)
             {
-                return Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+                comm.Parameters.AddWithValue("commen", e.comment);
+            }
+            else
+            {
+                comm.Parameters.AddWithValue("commen", "");
             }
 
-            return Environment.GetEnvironmentVariable("ProgramFiles");
+            comm.ExecuteNonQuery();
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using DuckPond.Models;
+using InstantMessenger;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +15,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace DuckPond.Pages
 {
@@ -79,17 +83,11 @@ namespace DuckPond.Pages
 
             for (int i = 0; i < dtrs.Count; i++)
             {
-                Console.WriteLine("Ran for a row");
                 DataGridRow dataGridRow = (DataGridRow)DatabaseTable.ItemContainerGenerator.ContainerFromIndex(i);
                 DBTableRow db = (DBTableRow)dataGridRow.Item;
                 if (db.ConnectionString.Trim().Length != 0)
                 {
                     dbos.Add(new DatabaseObject(db.ConnectionString,db.Preference));
-                    Console.WriteLine("Trap");
-                }
-                else
-                {
-                    Console.WriteLine("Escape");
                 }
             }
 
@@ -100,12 +98,9 @@ namespace DuckPond.Pages
             int a = 1;
             this.dtrs = new List<DBTableRow>();
 
-            Console.WriteLine("101DBOCOUNT "+dbos.Count);
-
             foreach (DatabaseObject dbo in dbos)
             {  
                 clean.Add(new DatabaseObject(dbo.ConnectionString,a));
-                Console.WriteLine("ADDED TO CLEAN, NOW LONG AS " + clean.Count);
                 dtrs.Add(new DBTableRow { ConnectionString = dbo.ConnectionString, Preference = a });
 
                 DatabaseTable.ItemsSource = dtrs;
@@ -119,11 +114,45 @@ namespace DuckPond.Pages
 
         public void Commit()
         {
+            //Maybe make a receipt?
             SQLiteClass sql = new SQLiteClass();
-            Console.WriteLine("CLEANCOUNT "+clean.Count);
             sql.NewConnections(clean);
+            //Get all services and ports
+            List<ServicesObject> svcs = sql.GetServices();
+
+            foreach (ServicesObject so in svcs)
+            {
+                IMClient im = new IMClient();
+                im.setConnParams(so.IPAddress, so.port);
+                im.SetupConn();
+
+                im.SendSignal((byte)IMClient.IM_NewDatabases, DoSerialize(clean));
+            }
 
             sql.CloseCon();
+        }
+
+        private void BtnRemoveRow_Click(object sender, RoutedEventArgs e)
+        {
+            int rowNumber = DatabaseTable.SelectedIndex;
+            dtrs.RemoveAt(rowNumber);
+            DatabaseTable.Items.Refresh();
+        }
+
+        public static String DoSerialize(Object o)
+        {
+            XmlSerializer xsSubmit = new XmlSerializer(o.GetType());
+            var xml = "";
+
+            using (var sww = new StringWriter())
+            {
+                using (XmlWriter writer = XmlWriter.Create(sww))
+                {
+                    xsSubmit.Serialize(writer, o);
+                    xml = sww.ToString(); // Your XML
+                    return xml;
+                }
+            }
         }
     }
 }

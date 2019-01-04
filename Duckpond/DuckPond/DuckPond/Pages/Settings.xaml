@@ -17,17 +17,13 @@
         <Label Content="Confirm New Password" HorizontalAlignment="Left" Margin="50,566,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right"/>
         <Button x:Name="BtnChangePassword" Content="Change Password" HorizontalAlignment="Left" Margin="346,618,0,0" VerticalAlignment="Top" Width="100" Click="BtnChangePassword_Click"/>
         <Label Content="Application Password" HorizontalAlignment="Left" Margin="50,427,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right" FontWeight="Bold"/>
-        <Label Content="Database Connection 1" HorizontalAlignment="Left" Margin="50,66,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right" FontWeight="Bold"/>
-        <TextBox x:Name="DBAddress1" HorizontalAlignment="Left" Height="153" Margin="196,104,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="300"/>
-        <Label Content="Connection String" HorizontalAlignment="Left" Margin="50,101,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right"/>
-        <Label Content="Database Connection 2" HorizontalAlignment="Left" Margin="562,66,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right" FontWeight="Bold"/>
-        <TextBox x:Name="DBAddress2" HorizontalAlignment="Left" Height="153" Margin="708,104,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="300"/>
-        <Label Content="Connection String" HorizontalAlignment="Left" Margin="562,101,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right"/>
-        <Button x:Name="BtnSetDB1" Content="Set Database 1" HorizontalAlignment="Left" Margin="396,262,0,0" VerticalAlignment="Top" Width="100" Click="BtnSetDB1_Click"/>
-        <Button x:Name="BtnSetDB2" Content="Set Database 2" HorizontalAlignment="Left" Margin="908,262,0,0" VerticalAlignment="Top" Width="100" Click="BtnSetDB2_Click"/>
-        <Label x:Name="ErrorDB1" Content="" HorizontalAlignment="Left" Margin="196,262,0,0" VerticalAlignment="Top" Width="145"/>
-        <Label x:Name="ErrorDB2" Content="" HorizontalAlignment="Left" Margin="708,262,0,0" VerticalAlignment="Top" Width="145"/>
         <Label x:Name="ErrorPassword" Content="" HorizontalAlignment="Left" Margin="201,612,0,0" VerticalAlignment="Top" Width="145"/>
         <Label x:Name="PageName" Content="Duckpond: Settings" HorizontalAlignment="Left" Margin="761,633,0,0" VerticalAlignment="Top" FontSize="24" Width="280" FontFamily="Noto Sans"/>
+        <Label Content="Client IP Range" HorizontalAlignment="Left" Margin="50,84,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right" FontWeight="Bold"/>
+        <Label Content="Include:" HorizontalAlignment="Left" Margin="50,115,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right"/>
+        <Label Content="Exclude:" HorizontalAlignment="Left" Margin="50,158,0,0" VerticalAlignment="Top" Width="141" HorizontalContentAlignment="Right"/>
+        <TextBox x:Name="txtInclude" HorizontalAlignment="Left" Height="23" Margin="196,119,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="250"/>
+        <TextBox x:Name="txtExclude" HorizontalAlignment="Left" Height="23" Margin="196,161,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="250"/>
+        <Button x:Name="BtnChangeIPs" Content="Set IPs" HorizontalAlignment="Left" Margin="346,214,0,0" VerticalAlignment="Top" Width="100" Click="BtnChangeIPs_Click"/>
     </Grid>
 </Page>

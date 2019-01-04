@@ -55,5 +55,20 @@ namespace DuckPond
         {
             Content_Frame.Navigate(new Lookup());
         }
+
+        private void BtnDatabases_Click(object sender, RoutedEventArgs e)
+        {
+            Content_Frame.Navigate(new Databases());
+        }
+
+        private void BtnService_Click(object sender, RoutedEventArgs e)
+        {
+            Content_Frame.Navigate(new Services());
+        }
+
+        private void BtnKnownHosts_Click(object sender, RoutedEventArgs e)
+        {
+            Content_Frame.Navigate(new KnownHosts());
+        }
     }
 }

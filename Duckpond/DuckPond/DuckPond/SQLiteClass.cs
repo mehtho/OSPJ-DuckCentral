@@ -44,13 +44,17 @@ namespace DuckPond
                 SQLiteCommand command3 = new SQLiteCommand(sql3, m_dbConnection);
                 command3.ExecuteNonQuery();
 
-                string sql4 = "INSERT INTO BigDatabase VALUES ('localhost:8080',1)";
+                string sql4 = "INSERT INTO BigDatabase VALUES ('Connection String Here',1)";
                 SQLiteCommand command4 = new SQLiteCommand(sql4, m_dbConnection);
                 command4.ExecuteNonQuery();
 
-                string sql5 = "INSERT INTO BigDatabase VALUES ('localhost:8080',2)";
+                string sql5 = "INSERT INTO BigDatabase VALUES ('Connection String Here',2)";
                 SQLiteCommand command5 = new SQLiteCommand(sql5, m_dbConnection);
                 command5.ExecuteNonQuery();
+
+                string sql6 = "CREATE TABLE Services (IPAddress TEXT, Port INT, Preference INT PRIMARY KEY NOT NULL )";
+                SQLiteCommand command6 = new SQLiteCommand(sql6, m_dbConnection);
+                command6.ExecuteNonQuery();
 
                 m_dbConnection.ChangePassword("1CF01FBFAA598E96241D4A8D2802E3B39899E34A2B61BC3BEFEEECDCD592A58C4A8E20D54222F9849CE6FEBC2A4CD64E13CE02DAB71CFE4EF7655CF72A28FF06");
             }
@@ -133,6 +137,17 @@ namespace DuckPond
             cmd.ExecuteNonQuery();
         }
 
+        public void AddDatabase(DatabaseObject dtb)
+        {
+            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO BigDatabase " +
+                "(ConnectionString, Preference) VALUES ($conn,$pref)",m_dbConnection);
+
+            cmd.Parameters.AddWithValue("$conn", dtb.ConnectionString);
+            cmd.Parameters.AddWithValue("$pref", dtb.Preference);
+
+            cmd.ExecuteNonQuery();
+        }
+
         public DatabaseObject GetDatabase(int pref)
         {
             SQLiteCommand cmd = new SQLiteCommand("SELECT * FROM BigDatabase " +
@@ -149,6 +164,83 @@ namespace DuckPond
             }
 
             return dtb;
+        }
+
+        public List<DatabaseObject> GetConnections()
+        {
+            String sql = "SELECT * FROM BigDatabase ORDER BY PREFERENCE asc";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+
+            SQLiteDataReader reader = command.ExecuteReader();
+
+            List<DatabaseObject> dbs = new List<DatabaseObject>();
+
+            while (reader.Read())
+            {
+                dbs.Add(new DatabaseObject(reader.GetString(0), reader.GetInt32(1)));
+            }
+
+            return dbs;
+        }
+
+        public void NewConnections(List<DatabaseObject> dbos)
+        {
+            using (SQLiteTransaction tr = m_dbConnection.BeginTransaction())
+            {
+                SQLiteCommand cmd = new SQLiteCommand("DELETE FROM BigDatabase", m_dbConnection);
+                cmd.ExecuteNonQuery();
+
+                foreach (DatabaseObject dbo in dbos)
+                {
+                    this.AddDatabase(dbo);
+                }
+                tr.Commit();
+            }
+        }
+
+        public void NewServices(List<ServicesObject> svos)
+        {
+            using (SQLiteTransaction tr = m_dbConnection.BeginTransaction())
+            {
+                SQLiteCommand cmd = new SQLiteCommand("DELETE FROM Services", m_dbConnection);
+                cmd.ExecuteNonQuery();
+
+                foreach (ServicesObject svo in svos)
+                {
+                    this.AddService(svo);
+                }
+                tr.Commit();
+            }
+        }
+
+        public void AddService(ServicesObject svo)
+        {
+            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Services " +
+                "(IPAddress, Port, Preference) VALUES ($conn, $port, $pref)", m_dbConnection);
+
+            cmd.Parameters.AddWithValue("$conn", svo.IPAddress);
+            cmd.Parameters.AddWithValue("$port", svo.port);
+            cmd.Parameters.AddWithValue("$pref", svo.Preference);
+
+            cmd.ExecuteNonQuery();
+        }
+
+
+        public List<ServicesObject> GetServices()
+        {
+            String sql = "SELECT * FROM Services ORDER BY PREFERENCE asc";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+
+            SQLiteDataReader reader = command.ExecuteReader();
+
+            List<ServicesObject> svos = new List<ServicesObject>();
+
+            while (reader.Read())
+            {
+                svos.Add(new ServicesObject(reader.GetString(0), reader.GetInt32(1), reader.GetInt32(2)));
+            }
+
+            return svos;
         }
 
         public static string ProgramFilesx86()

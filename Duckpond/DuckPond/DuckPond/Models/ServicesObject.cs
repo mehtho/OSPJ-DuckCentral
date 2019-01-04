@@ -6,21 +6,23 @@ using System.Threading.Tasks;
 
 namespace DuckPond.Models
 {
-    [Serializable]
-    public class DatabaseObject
+    class ServicesObject
     {
-        public DatabaseObject()
+        public ServicesObject()
         {
 
         }
 
-        public DatabaseObject(String Conn, int Pref)
+        public ServicesObject(String Conn, int port, int Pref)
         {
-            this.ConnectionString = Conn;
+            this.IPAddress = Conn;
+            this.port = port;
             this.Preference = Pref;
         }
 
-        public String ConnectionString;
+        public String IPAddress;
+
+        public int port;
 
         public int Preference;
     }

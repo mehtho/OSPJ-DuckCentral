@@ -19,6 +19,7 @@ namespace DuckServer
         {
             prog = p;
             client = c;
+            dboss = new List<DatabaseObject>();
 
             // Handle client in another thread.
             (new Thread(new ThreadStart(SetupConn))).Start();
@@ -30,7 +31,8 @@ namespace DuckServer
         public SslStream ssl;            // Encrypts connection using SSL.
         public BinaryReader br;
         public BinaryWriter bw;
- 
+        List<DatabaseObject> dboss;
+
         void SetupConn()  // Setup connection and login or register.
         {
             try
@@ -55,35 +57,7 @@ namespace DuckServer
                     byte logMode = br.ReadByte();
 
                     Console.WriteLine("logMode: " + logMode);
-                    if (logMode == 99)
-                    {
-                        Console.WriteLine(br.ReadString());
-                        bw.Write(IM_OK);
-                    }
-                    else if(logMode == 7)
-                    {
-                        String eventString = br.ReadString();
-                        Events ev = DeserializeXMLFileToObject<Events>(eventString);
-                        //Write it!
-                    }
-                    else if (logMode == 62)
-                    {
-                        SQLiteClass sql = new SQLiteClass(ProgramFilesx86() + "\\DuckServer\\Information.dat");
-                        sql.AddDatabase(new DatabaseObject(br.ReadString(), br.ReadInt32()));
-                        sql.CloseCon();
-                    }
-                    else if(logMode == 63)
-                    {
-                        SQLiteClass sql = new SQLiteClass(ProgramFilesx86() + "\\DuckServer\\Information.dat");
-                        List<DatabaseObject> dbos = sql.GetConnections();
-                        foreach(DatabaseObject dbo in dbos)
-                        {
-                            bw.Write(dbo.ConnectionString);
-                            bw.Write(dbo.Preference);
-                        }
-                        bw.Write(IM_OK);
-                        sql.CloseCon();
-                    }
+                    HandleLog(logMode);
                     
                 }
                 //CloseConn();
@@ -133,14 +107,55 @@ namespace DuckServer
             return Environment.GetEnvironmentVariable("ProgramFiles");
         }
 
+        private void HandleLog(int mode)
+        {
+            SQLiteClass sql = new SQLiteClass(ProgramFilesx86() + "\\DuckServer\\Information.dat");
+            MSSQL msl;
+
+            switch (mode)
+            {
+                case 7:
+                    String eventString = br.ReadString();
+                    Events ev = DeserializeXMLFileToObject<Events>(eventString);
+                    sql.CloseCon();
+                    msl = new MSSQL();
+                    msl.AddEvent(ev);
+                    break;
+                case 62:
+                    sql.AddDatabase(new DatabaseObject(br.ReadString(), br.ReadInt32()));
+                    sql.CloseCon();
+                    break;
+                case 63:
+                    List<DatabaseObject> dbos = sql.GetConnections();
+                    foreach (DatabaseObject dbo in dbos)
+                    {
+                        bw.Write(dbo.ConnectionString);
+                        bw.Write(dbo.Preference);
+                    }
+                    bw.Write(IM_OK);
+                    sql.CloseCon();
+                    break;
+                case 65:
+                    List<DatabaseObject> dbs = DeserializeXMLFileToObject<List<DatabaseObject>>(br.ReadString());
+                    sql.NewConnections(dbs);
+                    sql.CloseCon();
+                    break;
+                case 99:
+                    Console.WriteLine(br.ReadString());
+                    bw.Write(IM_OK);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         public const int IM_Hello = 25050520;      // Hello
         public const byte IM_OK = 0;           // OK
         public const byte IM_Login = 1;        // Login
         public const byte IM_Bad_Credentials = 2;     // Bad Cred
         public const byte IM_Event = 4;  // Event log to server
-        public const byte IM_AddDatabase = 62;
-        public const byte IM_GetDatabases = 63;
-        public const byte IM_RemoveDatase = 64;
+        public const byte IM_NewDatabases = 65;
+        public const byte IM_NoMoreDatabases = 66;
         public const byte IM_Debug = 99;
     }
 }

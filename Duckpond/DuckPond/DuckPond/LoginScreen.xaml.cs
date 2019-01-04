@@ -18,8 +18,6 @@ namespace DuckPond
             this.Title = "Duck Pond";
         }
 
-        public System.Windows.Navigation.NavigationService NavigationService { get; }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             string Username = UsernameField.Text.Trim();
@@ -36,14 +34,5 @@ namespace DuckPond
                 }
             }
         }
-
-        public void SetAlert(String str)
-        {
-            Console.WriteLine("YEEEET");
-            Console.WriteLine(str);
-            AlertMessage.Content = str;
-        }
-
-
     }
 }

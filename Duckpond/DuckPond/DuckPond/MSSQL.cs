@@ -24,25 +24,67 @@ namespace DuckPond
             SQLiteClass sqlite = new SQLiteClass(DuckPassword.ud.getPassword());
             this.connectionString = sqlite.GetConnectionString(1);
 
-            cnn = new SqlConnection(connectionString);
+            try
+            {
+                cnn = new SqlConnection(connectionString);
+            }
+            catch (System.ArgumentException)
+            {
+                SetTopAlert("Error Connecting to DB!");
+            }
         }
 
-        public void closeCon()
+        private bool OpenCon()
         {
-            cnn.Close();
+            try
+            {
+                cnn.Open();
+                SetTopAlert("");
+                Console.WriteLine("Opened Connection");
+                return true;
+            }
+            catch (InvalidOperationException)
+            {
+                SetTopAlert("Error connecting to DB!");
+                return false;
+            }
+            catch (NullReferenceException)
+            {
+                SetTopAlert("Error connecting to DB!");
+                return false;
+            }
+            catch (Exception e)
+            {
+                SetTopAlert("Error connecting to DB!");
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.Message);
+                return false;
+            }
+        }
+
+        public void CloseCon()
+        {
+            if (cnn != null && cnn.State == ConnectionState.Open)
+                cnn.Close();
+        }
+
+        public void SetTopAlert(String str)
+        {
+            foreach (Window window in Application.Current.Windows)
+            {
+                if (window.GetType() == typeof(LoginScreen))
+                {
+                    (window as LoginScreen).AlertMessage.Content = str;
+                }
+            }
         }
 
         //Whitelist Methods
 
         public List<Whitelists> GetWhitelists()
         {
-            try
+            if (!OpenCon())
             {
-                cnn.Open();
-            }
-            catch(InvalidOperationException)
-            {
-                SetTopAlert("Error connecting to DB!");
                 return new List<Whitelists>();
             }
 
@@ -76,13 +118,8 @@ namespace DuckPond
         {
             if (!CheckWhitelistDupe(wl))
             {
-                try
+                if (!OpenCon())
                 {
-                    cnn.Open();
-                }
-                catch
-                {
-                    SetTopAlert("Error connecting to DB!");
                     return 2;
                 }
                 String q2 = "INSERT INTO dbo.Whitelist (DateTime,vid,pid,serial) Values (@dt, @v, @p, @cereal2)";
@@ -116,14 +153,9 @@ namespace DuckPond
 
         public bool CheckWhitelistDupe(Whitelists wl)
         {
-            try
+            if (!OpenCon())
             {
-                cnn.Open();
-            }
-            catch (InvalidOperationException)
-            {
-                SetTopAlert("Error connecting to DB!");
-                return false;
+                return true;
             }
             String q1 = "SELECT * FROM dbo.Whitelist Where Serial = @cereal";
             SqlParameter serialParam = new SqlParameter("cereal", SqlDbType.VarChar);
@@ -149,11 +181,7 @@ namespace DuckPond
 
         public List<Whitelists> FilteredWhitelists(String pid, String vid, String srl, DateTime dt1, DateTime dt2)
         {
-            try
-            {
-                cnn.Open();
-            }
-            catch (InvalidOperationException)
+            if (!OpenCon())
             {
                 return new List<Whitelists>();
             }
@@ -185,9 +213,9 @@ namespace DuckPond
                 cmd.CommandText = sqltxt;
                 cmd.Parameters.AddWithValue("@srl", "%" + srl + "%");
             }
-                
-                sqltxt += "ORDER BY WhitelistID desc";
-                cmd.CommandText = sqltxt;
+
+            sqltxt += "ORDER BY WhitelistID desc";
+            cmd.CommandText = sqltxt;
 
             SqlParameter dtt1 = new SqlParameter("dt1", SqlDbType.DateTime);
             dtt1.Value = dt1;
@@ -225,55 +253,28 @@ namespace DuckPond
             cmd.CommandType = CommandType.Text;
             cmd.Connection = cnn;
 
-            try
+            if (!OpenCon())
             {
-                try
-                {
-                    cnn.Open();
-                }
-                catch
-                {
-                    SetTopAlert("Error connecting to DB!");
-                    return new List<Events>();
-                }
-                reader = cmd.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    Events ev = new Events(
-
-                        reader["code"].ToString(),
-                        reader["message"].ToString(),
-                        (int)reader["severity"],
-                        reader["IP"].ToString(),
-                        reader["GUID"].ToString(),
-                        (DateTime)reader["date"]);
-
-
-                    evs.Add(ev);
-                }
+                return new List<Events>();
             }
-            catch(SqlException)
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
             {
-                SetTopAlert("Error connecting to DB!");
-            }
-            finally
-            {
-                cnn.Close();
+                Events ev = new Events(
+
+                    reader["code"].ToString(),
+                    reader["message"].ToString(),
+                    (int)reader["severity"],
+                    reader["IP"].ToString(),
+                    reader["GUID"].ToString(),
+                    (DateTime)reader["date"],
+                    reader["comment"].ToString());
+
+                evs.Add(ev);
             }
 
             return evs;
-        }
-
-        public void SetTopAlert(String str)
-        {
-            foreach (Window window in Application.Current.Windows)
-            {
-                if (window.GetType() == typeof(LoginScreen))
-                {
-                    (window as LoginScreen).AlertMessage.Content = str;
-                }
-            }
         }
 
         public List<Events> FilteredEvents(String code, String message, int[] severity, String ip, String guid, DateTime date1, DateTime date2)
@@ -282,7 +283,7 @@ namespace DuckPond
             SqlCommand cmd = new SqlCommand();
             SqlDataReader reader;
 
-            String sqltxt = "SELECT * FROM dbo.Events a INNER JOIN dbo.eventdetails b ON a.code = b.code " + 
+            String sqltxt = "SELECT * FROM dbo.Events a INNER JOIN dbo.eventdetails b ON a.code = b.code " +
                 "WHERE Date BETWEEN @dt1 AND @dt2 ";
 
             if (!code.Equals(""))
@@ -297,11 +298,11 @@ namespace DuckPond
                 cmd.CommandText = sqltxt;
                 cmd.Parameters.AddWithValue("@message", "%" + message + "%");
             }
-            if (severity.Length>0)
+            if (severity.Length > 0)
             {
                 sqltxt += "AND severity IN(";
                 bool f = true;
-                foreach(int s in severity)
+                foreach (int s in severity)
                 {
                     if (f)
                     {
@@ -339,11 +340,14 @@ namespace DuckPond
 
             sqltxt += "ORDER BY a.Date desc";
 
-            cmd.CommandText = sqltxt; 
+            cmd.CommandText = sqltxt;
             cmd.CommandType = CommandType.Text;
             cmd.Connection = cnn;
 
-            cnn.Open();
+            if (!OpenCon())
+            {
+                return new List<Events>();
+            }
             reader = cmd.ExecuteReader();
 
             while (reader.Read())
@@ -355,13 +359,99 @@ namespace DuckPond
                     (int)reader["severity"],
                     reader["IP"].ToString(),
                     reader["GUID"].ToString(),
-                    (DateTime)reader["date"]);
+                    (DateTime)reader["date"],
+                    reader["comment"].ToString());
 
 
                 evs.Add(ev);
             }
             cnn.Close();
             return evs;
+        }
+        //Known Host Methods
+        public List<KnownHost> GetKnownHosts()
+        {
+            List<KnownHost> khs = new List<KnownHost>();
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader reader;
+
+            cmd.CommandText = "SELECT * FROM dbo.Hosts ORDER BY DateAdded desc";
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = cnn;
+
+            if (!OpenCon())
+            {
+                return new List<KnownHost>();
+            }
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                KnownHost kh = new KnownHost(
+                    reader["MAC"].ToString(),
+                    reader["IP"].ToString(),
+                    reader["Version"].ToString(),
+                    (DateTime)reader["DateAdded"],
+                    reader["GUID"].ToString()
+                    );
+            }
+
+            return khs;
+        }
+
+        public void AddKnownHost(KnownHost kh)
+        {
+            String q = "INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID) Values (@m, @i, @v, @da, @g)";
+            SqlCommand comm = new SqlCommand(q, cnn);
+
+            comm.Parameters.AddWithValue("m", kh.hostMAC);
+            comm.Parameters.AddWithValue("i", kh.hostIP);
+            comm.Parameters.AddWithValue("v", kh.version);
+            comm.Parameters.AddWithValue("da", kh.dateAdded);
+            comm.Parameters.AddWithValue("g", kh.GUID);
+
+            comm.ExecuteNonQuery();
+        }
+
+        public bool CheckKnownHostDupe(KnownHost kh)
+        {
+            if (!OpenCon())
+            {
+                return true;
+            }
+            String q1 = "SELECT * FROM dbo.Hosts Where GUID = @guid";
+            SqlParameter serialParam = new SqlParameter("guid", SqlDbType.VarChar);
+            serialParam.Value = kh.GUID;
+
+            SqlCommand comm = new SqlCommand(q1, cnn);
+
+            comm.Parameters.Add(serialParam);
+
+            var results = comm.ExecuteReader();
+
+            while (results.Read())
+            {
+                if (results["guid"].ToString().Equals(kh.GUID))
+                {
+                    cnn.Close();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public bool ClearHosts()
+        {
+            if (!OpenCon())
+            {
+                return false;
+            }
+            else
+            {
+                SqlCommand sql = new SqlCommand("Delete from dbo.Hosts",cnn);
+                sql.ExecuteNonQuery();
+                return true;
+            }
         }
     }
 }

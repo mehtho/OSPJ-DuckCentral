@@ -1,0 +1,15 @@
+﻿<Page x:Class="DuckPond.Pages.AreYouSure"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:DuckPond.Pages"
+      mc:Ignorable="d" 
+      d:DesignHeight="450" d:DesignWidth="500"
+      Title="AreYouSure">
+
+    <Grid Background="White">
+        <Label x:Name="MessageLabel" Content="Are you sure you want to&#xD;&#xA;clear all known hosts?" HorizontalAlignment="Left" Margin="43,113,0,0" VerticalAlignment="Top" Width="363" Height="78" FontSize="24"/>
+        <Button x:Name="BtnYes" Content="Yes" HorizontalAlignment="Left" Margin="275,425,0,0" VerticalAlignment="Top" Width="75" Click="BtnYes_Click"/>
+    </Grid>
+</Page>
