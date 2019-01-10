@@ -64,10 +64,8 @@ namespace DuckPond.Pages
             List<String> ips = IPRange.RangeListStringToIPList(include);
             ips = IPRange.ExcludeFromListString(ips,exclude);
 
-            foreach(String ip in ips)
-            {
-                Console.WriteLine(ip);
-            }
+            MSSQL ms = new MSSQL();
+            ms.AddIPs(ips);
 
             txtInclude.Text = "";
             txtExclude.Text = "";

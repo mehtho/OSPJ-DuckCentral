@@ -18,7 +18,7 @@ namespace InstantMessenger
         bool _conn = false;    // Is connected/connecting?
 
         public string Server;  // Address of server. In this case - local IP address.
-        public int Port = 2000;
+        public int Port = 25567;
 
         // Start connection thread and login or register.
         void connect(String server, int port)
@@ -46,6 +46,12 @@ namespace InstantMessenger
         {
             bw.Write(code);
         }
+
+        public String RequestParam(byte code)
+        {
+            bw.Write(code);
+            return br.ReadString();
+        }
  
         TcpClient client;
         NetworkStream netStream;
@@ -61,10 +67,11 @@ namespace InstantMessenger
 
         public void SetupConn()  // Setup connection and login
         {
-            client = new TcpClient(Server, Port);  // Connect to the server.
+            Console.WriteLine(Server+":"+Port);
+            client = new TcpClient(Server.Trim(), Port);  // Connect to the server.
             netStream = client.GetStream();
             ssl = new SslStream(netStream, false, new RemoteCertificateValidationCallback(ValidateCert));
-            ssl.AuthenticateAsClient("InstantMessengerServer");
+            ssl.AuthenticateAsClient("DuckServer");
             // Now we have encrypted connection.
             _conn = true;
             br = new BinaryReader(ssl, Encoding.UTF8);
@@ -96,7 +103,13 @@ namespace InstantMessenger
         public const byte IM_Login = 1;        // Login
         public const byte IM_Bad_Credentials = 2;     // Bad Cred
         public const byte IM_Event = 4;  // Event log to server
+        public const byte IM_NewIdentity = 30;
+        public const byte IM_GetIdentity = 31;
+        public const byte IM_GetVersion = 32;
+        public const byte IM_AddDatabases = 62;
+        public const byte IM_GetDatabases = 63;
         public const byte IM_NewDatabases = 65;
+        public const byte IM_NoMoreDatabases = 66;
         public const byte IM_Debug = 99;
 
         public static bool ValidateCert(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)

@@ -85,9 +85,12 @@ namespace DuckPond.Resources
                     IPRange ir = new IPRange(range);
                     ipList.AddRange(ir.GetAllIPString());
                 }
-                catch
+                catch(Exception e)
                 {
                     //Failed to parse, don't care
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.Source);
+                    Console.WriteLine(e.StackTrace);
                 }
             }
 

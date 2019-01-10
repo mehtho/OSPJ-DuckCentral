@@ -10,6 +10,7 @@ using System.Threading;
 using System.Xml.Serialization;
 using DuckPond.Models;
 using DuckPond;
+using System.Reflection;
 
 namespace DuckServer
 {
@@ -114,18 +115,50 @@ namespace DuckServer
 
             switch (mode)
             {
-                case 7:
+                case IM_Event:
                     String eventString = br.ReadString();
                     Events ev = DeserializeXMLFileToObject<Events>(eventString);
                     sql.CloseCon();
                     msl = new MSSQL();
                     msl.AddEvent(ev);
                     break;
-                case 62:
+                case IM_NewIdentity:
+                    try
+                    {
+                        var pi = netStream.GetType().GetProperty("Socket", BindingFlags.NonPublic | BindingFlags.Instance);
+                        var socketIp = ((Socket)pi.GetValue(netStream, null)).RemoteEndPoint.ToString();
+
+                        String k = br.ReadString();
+                        KnownHost kh = DeserializeXMLFileToObject<KnownHost>(k);
+
+                        int index = socketIp.IndexOf(":");
+                        if (index > 0)
+                            socketIp = socketIp.Substring(0, index);
+
+                        kh.hostIP = socketIp;
+                        kh.status = KnownHost.STATE_ONLINE;
+                        kh.dateAdded = DateTime.Now;
+
+                        msl = new MSSQL();
+                        msl.AddKnownHost(kh);
+                        bw.Write(IM_OK);
+                    }
+                    catch
+                    {
+                        bw.Write(IM_Bad_Credentials);
+                    }
+                    break;
+                case IM_GetIdentity:
+                    bw.Write("DEBUGGUID"); //Add the GUID get here
+                    break;
+                case IM_GetVersion:
+                    bw.Write("Version DEBUG"); //Add the version get here
+                    break;
+                case IM_AddDatabases:
                     sql.AddDatabase(new DatabaseObject(br.ReadString(), br.ReadInt32()));
                     sql.CloseCon();
                     break;
-                case 63:
+                case IM_GetDatabases:
                     List<DatabaseObject> dbos = sql.GetConnections();
                     foreach (DatabaseObject dbo in dbos)
                     {
@@ -135,12 +168,12 @@ namespace DuckServer
                     bw.Write(IM_OK);
                     sql.CloseCon();
                     break;
-                case 65:
+                case IM_NewDatabases:
                     List<DatabaseObject> dbs = DeserializeXMLFileToObject<List<DatabaseObject>>(br.ReadString());
                     sql.NewConnections(dbs);
                     sql.CloseCon();
                     break;
-                case 99:
+                case IM_Debug:
                     Console.WriteLine(br.ReadString());
                     bw.Write(IM_OK);
                     break;
@@ -154,6 +187,11 @@ namespace DuckServer
         public const byte IM_Login = 1;        // Login
         public const byte IM_Bad_Credentials = 2;     // Bad Cred
         public const byte IM_Event = 4;  // Event log to server
+        public const byte IM_NewIdentity = 30;
+        public const byte IM_GetIdentity = 31;
+        public const byte IM_GetVersion = 32;
+        public const byte IM_AddDatabases = 62;
+        public const byte IM_GetDatabases = 63;
         public const byte IM_NewDatabases = 65;
         public const byte IM_NoMoreDatabases = 66;
         public const byte IM_Debug = 99;

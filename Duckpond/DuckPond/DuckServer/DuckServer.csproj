@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="DatabaseObject.cs" />
     <Compile Include="Events.cs" />
+    <Compile Include="KnownHost.cs" />
     <Compile Include="MSSQL.cs" />
     <Compile Include="ServiceConn.cs" />
     <Compile Include="Service.cs" />

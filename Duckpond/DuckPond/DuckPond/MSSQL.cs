@@ -9,6 +9,7 @@ using DuckPond.Models.Whitelists;
 using System.Collections;
 using DuckPond.Models;
 using System.Windows;
+using System.Data.SQLite;
 
 namespace DuckPond
 {
@@ -38,12 +39,14 @@ namespace DuckPond
         {
             try
             {
+                if(cnn.State==ConnectionState.Closed)
                 cnn.Open();
+
                 SetTopAlert("");
                 Console.WriteLine("Opened Connection");
                 return true;
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException e)
             {
                 SetTopAlert("Error connecting to DB!");
                 return false;
@@ -58,6 +61,7 @@ namespace DuckPond
                 SetTopAlert("Error connecting to DB!");
                 Console.WriteLine(e.Source);
                 Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
                 return false;
             }
         }
@@ -394,8 +398,10 @@ namespace DuckPond
                     (DateTime)reader["DateAdded"],
                     reader["GUID"].ToString()
                     );
+                khs.Add(kh);
             }
 
+            CloseCon();
             return khs;
         }
 
@@ -452,6 +458,68 @@ namespace DuckPond
                 sql.ExecuteNonQuery();
                 return true;
             }
+        }
+
+        //IP Methods
+        public void AddIPs(List<string> IPs)
+        {
+            if (OpenCon())
+            {
+                using (SqlTransaction tr = cnn.BeginTransaction())
+                {
+                    try
+                    {
+                        SqlCommand sql1 = new SqlCommand("Delete from CheckIPs", cnn);
+                        sql1.Transaction = tr;
+                        sql1.ExecuteNonQuery();
+
+                        var dt = new DataTable();
+                        dt.Columns.Add("IPAddress");
+                        foreach (String IP in IPs)
+                        {
+                            dt.Rows.Add(IP);
+                        }
+
+                        using (var sqlBulk = new SqlBulkCopy(cnn, SqlBulkCopyOptions.KeepIdentity, tr))
+                        {
+                            sqlBulk.DestinationTableName = "CheckIPs";
+                            sqlBulk.WriteToServer(dt);
+                        }
+                        tr.Commit();
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine(e.Source);
+                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.StackTrace);
+                        tr.Rollback();
+                    }
+                }
+            }
+        }
+
+        public List<String> GetIPs()
+        {
+            List<String> ips = new List<string>();
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader reader;
+
+            cmd.CommandText = "SELECT * FROM dbo.CheckIPs";
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = cnn;
+
+            if (!OpenCon())
+            {
+                return new List<String>();
+            }
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                ips.Add(reader["IPAddress"].ToString());
+            }
+
+            return ips;
         }
     }
 }

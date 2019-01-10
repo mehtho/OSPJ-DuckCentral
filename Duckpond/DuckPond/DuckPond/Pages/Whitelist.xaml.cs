@@ -105,7 +105,6 @@ namespace DuckPond.Pages
                 }
 
                 MSSQL ms = new MSSQL();
-                Console.WriteLine(apid+avid+aserial+adt1.ToString()+adt2.ToString());
                 wls = ms.FilteredWhitelists(apid, avid, aserial, adt1, adt2);
 
                 WhitelistTable.Items.Clear();

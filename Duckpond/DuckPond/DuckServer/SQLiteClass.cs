@@ -19,6 +19,7 @@ namespace DuckPond
 
             if (!File.Exists(FileLocation))
             {
+                Directory.CreateDirectory(ProgramFilesx86() + "\\DuckServer");
                 Console.WriteLine("Writing a new DB at "+FileLocation);
                 SQLiteConnection.CreateFile(FileLocation);
                 m_dbConnection = new SQLiteConnection("Data Source=" + FileLocation + ";Version=3;");
@@ -123,6 +124,17 @@ namespace DuckPond
                 }
                 tr.Commit();
             }
+        }
+
+        public static string ProgramFilesx86()
+        {
+            if (8 == IntPtr.Size
+                || (!String.IsNullOrEmpty(Environment.GetEnvironmentVariable("PROCESSOR_ARCHITEW6432"))))
+            {
+                return Environment.GetEnvironmentVariable("ProgramFiles(x86)");
+            }
+
+            return Environment.GetEnvironmentVariable("ProgramFiles");
         }
     }
 }

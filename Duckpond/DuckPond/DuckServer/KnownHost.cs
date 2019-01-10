@@ -82,7 +82,7 @@ namespace DuckPond.Models
         }
 
         public const Byte STATE_UNKNOWN = 0;
-        public const Byte STATE_OFFLINE = 1;
-        public const Byte STATE_ONLINE = 2;
+        public const Byte STATE_ONLINE = 0;
+        public const Byte STATE_OFFLINE = 0;
     }
 }

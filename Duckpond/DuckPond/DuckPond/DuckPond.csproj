@@ -145,6 +145,7 @@
     <Compile Include="Pages\Whitelist.xaml.cs">
       <DependentUpon>Whitelist.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Resources\HostScan.cs" />
     <Compile Include="Resources\IPRangeParser.cs" />
     <Compile Include="Resources\TextCleaner.cs" />
     <Compile Include="SQLiteClass.cs" />

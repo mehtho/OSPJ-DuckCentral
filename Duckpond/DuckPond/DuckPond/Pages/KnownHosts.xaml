@@ -9,7 +9,7 @@
       Title="KnownHosts">
 
     <Grid Background="White" Height="685" Width="1050">
-        <DataGrid x:Name="KnownHostTable" HorizontalAlignment="Left" Height="475" Margin="25,99,0,0" VerticalAlignment="Top" Width="1000" AutoGenerateColumns="True">
+        <DataGrid x:Name="KnownHostTable" HorizontalAlignment="Left" Height="475" Margin="25,99,0,0" VerticalAlignment="Top" Width="1000" AutoGenerateColumns="False">
             <DataGrid.Columns>
                 <DataGridTextColumn x:Name="ColMac" Header="MAC Address" Width="200"/>
                 <DataGridTextColumn x:Name="ColIP" Header="IP Address" Width="150"/>
@@ -28,5 +28,6 @@
         <Button x:Name="BtnCloseAddHosts" Content="Close" HorizontalAlignment="Left" Margin="675,515,0,0" VerticalAlignment="Top" Width="75" Click="BtnCloseAddHosts_Click" Visibility="Hidden"/>
         <Frame x:Name="Content_Frame" HorizontalAlignment="Left" Height="685" Margin="0,0,0,0" VerticalAlignment="Top" Width="1050" NavigationUIVisibility="Hidden"/>
         <Label x:Name="PageName" Content="Duckpond: Clients" HorizontalAlignment="Left" Margin="755,632,0,0" VerticalAlignment="Top" FontSize="24" Width="285" FontFamily="Noto Sans"/>
+        <Label x:Name="lblLoaded" Content="Loaded: " HorizontalAlignment="Left" Margin="64,54,0,0" VerticalAlignment="Top" Width="225"/>
     </Grid>
 </Page>

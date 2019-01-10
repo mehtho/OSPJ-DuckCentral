@@ -47,7 +47,7 @@ namespace DuckPond.Pages
 
         private void BtnAddRow_Click(object sender, RoutedEventArgs e)
         {
-            svrs.Add(new SVTableRow { IPAddress = "", Port=2000, Preference = svrs.Count + 1 });
+            svrs.Add(new SVTableRow { IPAddress = "", Port=25567, Preference = svrs.Count + 1 });
             ServicesTable.ItemsSource = svrs;
             ServicesTable.Items.Refresh();
         }

@@ -44,9 +44,11 @@ namespace DuckPond
                         connectedTo = db.Preference;
                         break;
                     }
-                    catch
+                    catch(Exception e)
                     {
-                        //Write failure to log
+                        Console.WriteLine(e.Source);
+                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.StackTrace);
                     }
 
                 }
@@ -69,18 +71,25 @@ namespace DuckPond
                 cnn.Open();
                 return true;
             }
-            catch (InvalidOperationException)
+            catch (InvalidOperationException e)
             {
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
                 return false;
             }
-            catch (NullReferenceException)
+            catch (NullReferenceException e)
             {
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
                 return false;
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Source);
                 Console.WriteLine(e.Message);
+                Console.WriteLine(e.StackTrace);
                 return false;
             }
         }
@@ -243,6 +252,64 @@ namespace DuckPond
             }
 
             comm.ExecuteNonQuery();
+        }
+
+        //Known Host Methods
+        public List<KnownHost> GetKnownHosts()
+        {
+            List<KnownHost> khs = new List<KnownHost>();
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader reader;
+
+            cmd.CommandText = "SELECT * FROM dbo.Hosts ORDER BY DateAdded desc";
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = cnn;
+
+            if (!OpenCon())
+            {
+                return new List<KnownHost>();
+            }
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                KnownHost kh = new KnownHost(
+                    reader["MAC"].ToString(),
+                    reader["IP"].ToString(),
+                    reader["Version"].ToString(),
+                    (DateTime)reader["DateAdded"],
+                    reader["GUID"].ToString()
+                    );
+            }
+
+            CloseCon();
+            return khs;
+        }
+
+        public void AddKnownHost(KnownHost kh)
+        {
+            if (OpenCon())
+            {
+                
+                SqlCommand comm = new SqlCommand("INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID) Values (@m, @i, @v, @da, @g)", cnn);
+
+                comm.Parameters.AddWithValue("m", kh.hostMAC);
+                comm.Parameters.AddWithValue("i", kh.hostIP.Trim());
+                comm.Parameters.AddWithValue("v", kh.version.Trim());
+                comm.Parameters.AddWithValue("da", kh.dateAdded);
+                comm.Parameters.AddWithValue("g", kh.GUID.Trim());
+
+                try
+                {
+                    comm.ExecuteNonQuery();
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Source);
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
+                }
+            }
         }
     }
 }

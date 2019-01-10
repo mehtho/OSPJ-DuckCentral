@@ -10,11 +10,6 @@ namespace DuckPond.Models
     [Serializable]
     public class KnownHost
     {
-        public KnownHost()
-        {
-
-        }
-
         public string hostMAC;
 
         public string hostIP;
@@ -26,6 +21,11 @@ namespace DuckPond.Models
         public DateTime dateAdded;
 
         public string GUID;
+
+        public KnownHost()
+        {
+
+        }
 
         public KnownHost(string hMAC, string hIP, string hVer, byte hStat, DateTime dAdded, String gUID)
         {
@@ -82,7 +82,7 @@ namespace DuckPond.Models
         }
 
         public const Byte STATE_UNKNOWN = 0;
-        public const Byte STATE_OFFLINE = 1;
-        public const Byte STATE_ONLINE = 2;
+        public const Byte STATE_ONLINE = 0;
+        public const Byte STATE_OFFLINE = 0;
     }
 }

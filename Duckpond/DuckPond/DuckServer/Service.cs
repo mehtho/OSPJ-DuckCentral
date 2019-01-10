@@ -22,23 +22,23 @@ namespace DuckServer
 
         // Self-signed certificate for SSL encryption.
         // You can generate one using my generate_cert script in tools directory (OpenSSL is required).
-        public X509Certificate2 cert = new X509Certificate2("server.pfx", "instant");
+        public X509Certificate2 cert = new X509Certificate2(SQLiteClass.ProgramFilesx86()+"\\DuckServer\\server.pfx", "instant");
 
         // IP of this computer. If you are running all clients at the same computer you can use 127.0.0.1 (localhost). 
-        public IPAddress ip = IPAddress.Parse("127.0.0.1");
-        public int port = 2000;
+        public IPAddress ip;
+        public int port = 25567;
         public bool running = true;
         public TcpListener server;
 
         public Service()
         {
-            Console.Title = "InstantMessenger Server";
-            Console.WriteLine("----- InstantMessenger Server -----");
+            Console.Title = "DuckServer";
+            Console.WriteLine("----- DuckServer -----");
             Console.WriteLine("[{0}] Starting server...", DateTime.Now);
-
+            ip = IPAddress.Parse(GetIPFromConfig());
             server = new TcpListener(ip, port);
             server.Start();
-            Console.WriteLine("[{0}] Server is running properly!", DateTime.Now);
+            Console.WriteLine("[{0}] Server is running properly on " + ip+":"+port, DateTime.Now);
 
             Listen();
         }
@@ -50,6 +50,26 @@ namespace DuckServer
                 TcpClient tcpClient = server.AcceptTcpClient();  // Accept incoming connection.
                 ServiceConn client = new ServiceConn(this, tcpClient);     // Handle in another thread.
             }
+        }
+
+        String GetIPFromConfig()
+        {
+            string path = SQLiteClass.ProgramFilesx86() + "\\DuckServer\\config.cfg";
+
+            if (!File.Exists(path)||new FileInfo(path).Length==0)
+            {
+                using (StreamWriter sw = File.CreateText(path))
+                {
+                    sw.WriteLine("127.0.0.1");
+                }
+            }
+            
+            string[] lines = File.ReadAllLines(path);
+            foreach (string line in lines)
+            {
+                return line;
+            }
+            return "127.0.0.1";
         }
 
 
