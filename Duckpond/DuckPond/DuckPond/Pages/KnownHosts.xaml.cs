@@ -88,16 +88,12 @@ namespace DuckPond.Pages
                 khrs.Add(new KHTableRow { GUID = kh.GUID, DateAdded = kh.dateAdded.ToString(), IP = kh.hostIP, MAC = kh.hostMAC, Status = KnownHost.ByteToString(kh.status), Version = "" });
             }
 
-
-            //Integrate portscan results here
             IPPS = new List<IPPlusStatus>();
             count = 0;
             max = ips.Count;
 
             foreach(String ip in ips)
             {
-                //Make a thread that sends the signal and returns the reply for the next step
-                //RUN
                 IPPlusStatus ipps = new IPPlusStatus {IP="0.0.0.0",Status=KnownHost.STATE_UNKNOWN };
 
                 Thread t = new Thread(() => ipps = HostScan.run(ip, 25567) );

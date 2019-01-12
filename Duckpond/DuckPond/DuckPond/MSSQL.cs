@@ -39,14 +39,14 @@ namespace DuckPond
         {
             try
             {
-                if(cnn.State==ConnectionState.Closed)
-                cnn.Open();
+                if (cnn.State == ConnectionState.Closed)
+                    cnn.Open();
 
                 SetTopAlert("");
                 Console.WriteLine("Opened Connection");
                 return true;
             }
-            catch (InvalidOperationException e)
+            catch (InvalidOperationException)
             {
                 SetTopAlert("Error connecting to DB!");
                 return false;
@@ -454,7 +454,7 @@ namespace DuckPond
             }
             else
             {
-                SqlCommand sql = new SqlCommand("Delete from dbo.Hosts",cnn);
+                SqlCommand sql = new SqlCommand("Delete from dbo.Hosts", cnn);
                 sql.ExecuteNonQuery();
                 return true;
             }
@@ -487,7 +487,7 @@ namespace DuckPond
                         }
                         tr.Commit();
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Console.WriteLine(e.Source);
                         Console.WriteLine(e.Message);
@@ -521,5 +521,66 @@ namespace DuckPond
 
             return ips;
         }
+
+        //Service Methods
+
+        public List<ServicesObject> GetServices(){
+            List<ServicesObject> sos = new List<ServicesObject>();
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader reader;
+
+            cmd.CommandText = "SELECT * FROM dbo.Services";
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = cnn;
+
+            if (!OpenCon())
+            {
+                return sos;
+            }
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                sos.Add(new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]));
+            }
+
+            return sos;
+        }
+
+        public void AddService(ServicesObject so, SqlTransaction sqlt)
+        {
+            if (OpenCon())
+            {
+                String q = "INSERT INTO dbo.Services (IP, Port, Preference) Values (@a, @b, @c)";
+                SqlCommand comm = new SqlCommand(q, cnn);
+                comm.Transaction = sqlt;
+                comm.Parameters.AddWithValue("a", so.IPAddress);
+                comm.Parameters.AddWithValue("b", so.port);
+                comm.Parameters.AddWithValue("c", so.Preference);
+
+                comm.ExecuteNonQuery();
+            }
+        }
+
+        public void SetServices(List<ServicesObject> sos)
+        {
+            if (OpenCon())
+            {
+                using (SqlTransaction sqlt = cnn.BeginTransaction())
+                {
+                    String q = "DELETE FROM dbo.Services";
+                    SqlCommand comm = new SqlCommand(q, cnn);
+                    comm.Transaction = sqlt;
+                    comm.ExecuteNonQuery();
+
+                    foreach (ServicesObject so in sos)
+                    {
+                        AddService(so, sqlt);
+                    }
+                    sqlt.Commit();
+                }
+            }
+        }
+
     }
 }

@@ -1,0 +1,15 @@
+        public const int IM_Hello = 25050520;      // Hello
+        public const byte IM_OK = 0;           // OK
+        public const byte IM_Login = 1;        // Login
+        public const byte IM_Bad_Credentials = 2;     // Bad Cred
+        public const byte IM_Event = 4;  // Event log to server
+        public const byte IM_NewIdentity = 30;
+        public const byte IM_GetIdentity = 31;
+        public const byte IM_GetVersion = 32;
+        public const byte IM_AddDatabases = 62;
+        public const byte IM_GetDatabases = 63;
+        public const byte IM_NewDatabases = 65;
+        public const byte IM_NoMoreDatabases = 66;
+        public const byte IM_NewServiceList = 70;
+        public const byte IM_NewWhitelists = 80;
+        public const byte IM_Debug = 99;

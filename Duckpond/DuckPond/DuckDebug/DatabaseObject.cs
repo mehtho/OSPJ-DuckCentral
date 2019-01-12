@@ -7,23 +7,20 @@ using System.Threading.Tasks;
 namespace DuckPond.Models
 {
     [Serializable]
-    public class ServicesObject
+    public class DatabaseObject
     {
-        public ServicesObject()
+        public DatabaseObject()
         {
 
         }
 
-        public ServicesObject(String Conn, int port, int Pref)
+        public DatabaseObject(String Conn, int Pref)
         {
-            this.IPAddress = Conn;
-            this.port = port;
+            this.ConnectionString = Conn;
             this.Preference = Pref;
         }
 
-        public String IPAddress;
-
-        public int port;
+        public String ConnectionString;
 
         public int Preference;
     }

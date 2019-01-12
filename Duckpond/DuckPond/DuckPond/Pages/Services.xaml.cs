@@ -47,7 +47,7 @@ namespace DuckPond.Pages
 
         private void BtnAddRow_Click(object sender, RoutedEventArgs e)
         {
-            svrs.Add(new SVTableRow { IPAddress = "", Port=25567, Preference = svrs.Count + 1 });
+            svrs.Add(new SVTableRow { IPAddress = "", Port=25568, Preference = svrs.Count + 1 });
             ServicesTable.ItemsSource = svrs;
             ServicesTable.Items.Refresh();
         }
@@ -123,6 +123,9 @@ namespace DuckPond.Pages
             sql.NewServices(clean);
 
             sql.CloseCon();
+
+            MSSQL ms = new MSSQL();
+            ms.SetServices(clean);
         }
 
         private void BtnRemoveRow_Click(object sender, RoutedEventArgs e)

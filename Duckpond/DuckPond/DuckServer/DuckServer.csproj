@@ -66,12 +66,16 @@
   <ItemGroup>
     <Compile Include="DatabaseObject.cs" />
     <Compile Include="Events.cs" />
+    <Compile Include="HostScan.cs" />
+    <Compile Include="IMClient.cs" />
     <Compile Include="KnownHost.cs" />
     <Compile Include="MSSQL.cs" />
     <Compile Include="ServiceConn.cs" />
     <Compile Include="Service.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServicesObject.cs" />
     <Compile Include="SQLiteClass.cs" />
+    <Compile Include="Whitelists.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

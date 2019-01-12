@@ -1,8 +1,10 @@
 ﻿using DuckPond.Models;
+using DuckPond.Models.Whitelists;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.IO;
+using System.Reflection;
 
 namespace DuckPond
 {
@@ -25,14 +27,22 @@ namespace DuckPond
                 m_dbConnection = new SQLiteConnection("Data Source=" + FileLocation + ";Version=3;");
                 m_dbConnection.Open();
 
-                string sql = "CREATE TABLE Identity (GUID TEXT, REGISTERED BOOL)";
+                string sql = "CREATE TABLE Identity (GUID TEXT, REGISTERED BOOL, Version TEXT)";
                 SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
                 command.ExecuteNonQuery();
 
-                string sql2 = "INSERT INTO Identity (GUID, REGISTERED) values ($gid, 'false');";
+                string sql2 = "INSERT INTO Identity (GUID, REGISTERED, Version) values ($gid, 'false','1.0.0.0');";
                 SQLiteCommand command2 = new SQLiteCommand(sql2, m_dbConnection);
                 command2.Parameters.AddWithValue("$gid", MakeGUID().ToString());
                 command2.ExecuteNonQuery();
+
+                string sql3 = "CREATE TABLE Whitelists (PID TEXT, VID TEXT, Serial TEXT, DateTime TEXT, WhitelistID INT PRIMARY KEY NOT NULL)";
+                SQLiteCommand command3 = new SQLiteCommand(sql3, m_dbConnection);
+                command3.ExecuteNonQuery();
+
+                string sql4 = "CREATE TABLE Services (IP TEXT, Port INT, Preference INT PRIMARY KEY NOT NULL )";
+                SQLiteCommand command4 = new SQLiteCommand(sql4, m_dbConnection);
+                command4.ExecuteNonQuery();
             }
 
             m_dbConnection = new SQLiteConnection("Data Source="+FileLocation+";Version=3;");
@@ -52,7 +62,21 @@ namespace DuckPond
             SQLiteDataReader reader = command.ExecuteReader();
             while (reader.Read())
             {
-                return reader.GetString(0);
+                return reader["GUID"].ToString();
+            }
+
+            return "";
+        }
+
+        public String GetVersion()
+        {
+            String sql = "SELECT * FROM Identity;";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+
+            SQLiteDataReader reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                return reader["Version"].ToString();
             }
 
             return "";
@@ -77,6 +101,96 @@ namespace DuckPond
             }
 
             return true;
+        }
+
+        public void NewServices(List<ServicesObject> sros)
+        {
+            using (SQLiteTransaction tr = m_dbConnection.BeginTransaction())
+            {
+                SQLiteCommand cmd = new SQLiteCommand("DELETE FROM Services", m_dbConnection);
+                cmd.ExecuteNonQuery();
+
+                foreach (ServicesObject sro in sros)
+                {
+                    this.AddService(sro);
+                }
+                tr.Commit();
+            }
+        }
+
+        public void AddService(ServicesObject sro)
+        {
+            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Services " +
+                "(Ip, Port, Preference) values ($Ip, $Port, $Preference) ", m_dbConnection);
+
+            cmd.Parameters.AddWithValue("$Ip", sro.IPAddress);
+            cmd.Parameters.AddWithValue("$Port", sro.port);
+            cmd.Parameters.AddWithValue("$Preference", sro.Preference);
+
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<ServicesObject> GetServices()
+        {
+            String sql = "SELECT * FROM Services ORDER BY Preference asc";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+
+            SQLiteDataReader reader = command.ExecuteReader();
+
+            List<ServicesObject> sros = new List<ServicesObject>();
+
+            while (reader.Read())
+            {
+                sros.Add(new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]));
+            }
+
+            return sros;
+        }
+
+        public void NewWhitelists(List<Whitelists> wls)
+        {
+            using (SQLiteTransaction tr = m_dbConnection.BeginTransaction())
+            {
+                SQLiteCommand cmd = new SQLiteCommand("DELETE FROM Whitelists", m_dbConnection);
+                cmd.ExecuteNonQuery();
+
+                foreach (Whitelists wl in wls)
+                {
+                    this.AddWhitelist(wl);
+                }
+                tr.Commit();
+            }
+        }
+
+        public void AddWhitelist(Whitelists wl)
+        {
+            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Whitelists " +
+             "(PID, VID, Serial, WhitelistID, DateTime) values ($PID, $VID, $Serial, $WhitelistID, $DateTime) ", m_dbConnection);
+
+            cmd.Parameters.AddWithValue("$PID", wl.Pid1);
+            cmd.Parameters.AddWithValue("$VID", wl.Vid1);
+            cmd.Parameters.AddWithValue("$Serial", wl.SerialNumber1);
+            cmd.Parameters.AddWithValue("$WhitelistID", wl.WhitelistID1);
+            cmd.Parameters.AddWithValue("$DateTime", wl.Datetime1);
+
+            cmd.ExecuteNonQuery();
+        }
+
+        public List<Whitelists> GetWhitelists()
+        {
+            String sql = "SELECT * FROM Whitelists ORDER BY WhitelistID desc";
+            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
+
+            SQLiteDataReader reader = command.ExecuteReader();
+
+            List<Whitelists> wls = new List<Whitelists>();
+
+            while (reader.Read())
+            {
+                wls.Add(new Whitelists((DateTime)reader["DateTime"],reader["Vid"].ToString(), reader["Pid"].ToString(), reader["Serial"].ToString(), (int)reader["WhitelistID"]));
+            }
+
+            return wls;
         }
 
         public static string ProgramFilesx86()

@@ -122,11 +122,19 @@ namespace DuckPond.Pages
 
             foreach (ServicesObject so in svcs)
             {
-                IMClient im = new IMClient();
-                im.setConnParams(so.IPAddress, so.port);
-                im.SetupConn();
+                try
+                {
+                    IMClient im = new IMClient();
+                    im.setConnParams(so.IPAddress, so.port);
+                    im.SetupConn();
 
-                im.SendSignal((byte)IMClient.IM_NewDatabases, DoSerialize(clean));
+                    im.SendSignal((byte)IMClient.IM_NewDatabases, DoSerialize(clean));
+                    im.Disconnect();
+                }
+                catch(System.Net.Sockets.SocketException)
+                {
+
+                }
             }
 
             sql.CloseCon();

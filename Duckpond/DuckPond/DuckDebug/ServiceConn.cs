@@ -12,7 +12,8 @@ using DuckPond.Models;
 using DuckPond;
 using System.Reflection;
 using DuckPond.Models.Whitelists;
-using DuckPond.Resources;
+using DuckDebug;
+using System.Net;
 
 namespace DuckServer
 {
@@ -28,12 +29,6 @@ namespace DuckServer
             (new Thread(new ThreadStart(SetupConn))).Start();
         }
 
-        public ServiceConn()
-        {
-        }
-
-        public string Server;  // Address of server. In this case - local IP address.
-        public int Port = 25568;
         Service prog;
         public TcpClient client;
         public NetworkStream netStream;  // Raw-data stream of connection.
@@ -41,12 +36,6 @@ namespace DuckServer
         public BinaryReader br;
         public BinaryWriter bw;
         List<DatabaseObject> dboss;
-
-        public void setConnParams(String s, int p)
-        {
-            Server = s;
-            Port = p;
-        }
 
         void SetupConn()  // Setup connection and login or register.
         {
@@ -124,73 +113,23 @@ namespace DuckServer
 
         private void HandleLog(int mode)
         {
-            SQLiteClass sql = new SQLiteClass(ProgramFilesx86() + "\\DuckServer\\Information.dat");
-            MSSQL msl;
-
+            SQLiteClass sql = new SQLiteClass(ProgramFilesx86() + "\\DuckClient\\Information.dat");
             switch (mode)
             {
-                case IM_Event:
-                    String eventString = br.ReadString();
-                    Events ev = DeserializeXMLFileToObject<Events>(eventString);
-                    sql.CloseCon();
-                    msl = new MSSQL();
-                    msl.AddEvent(ev);
-                    break;
-                case IM_NewIdentity:
-                    try
-                    {
-                        var pi = netStream.GetType().GetProperty("Socket", BindingFlags.NonPublic | BindingFlags.Instance);
-                        var socketIp = ((Socket)pi.GetValue(netStream, null)).RemoteEndPoint.ToString();
-
-                        String k = br.ReadString();
-                        KnownHost kh = DeserializeXMLFileToObject<KnownHost>(k);
-
-                        int index = socketIp.IndexOf(":");
-                        if (index > 0)
-                            socketIp = socketIp.Substring(0, index);
-
-                        kh.hostIP = socketIp;
-                        kh.status = KnownHost.STATE_ONLINE;
-                        kh.dateAdded = DateTime.Now;
-
-                        msl = new MSSQL();
-                        msl.AddKnownHost(kh);
-                        bw.Write(IM_OK);
-                    }
-                    catch
-                    {
-                        bw.Write(IM_Bad_Credentials);
-                    }
-                    break;
                 case IM_GetIdentity:
-                    
+                    bw.Write(sql.GetGUID());
                     break;
-                case IM_AddDatabases:
-                    sql.AddDatabase(new DatabaseObject(br.ReadString(), br.ReadInt32()));
-                    sql.CloseCon();
+                case IM_GetVersion:
+                    bw.Write(sql.GetVersion());
                     break;
-                case IM_GetDatabases:
-                    List<DatabaseObject> dbos = sql.GetConnections();
-                    foreach (DatabaseObject dbo in dbos)
-                    {
-                        bw.Write(dbo.ConnectionString);
-                        bw.Write(dbo.Preference);
-                    }
-                    bw.Write(IM_OK);
-                    sql.CloseCon();
-                    break;
-                case IM_NewDatabases:
-                    List<DatabaseObject> dbs = DeserializeXMLFileToObject<List<DatabaseObject>>(br.ReadString());
-                    sql.NewConnections(dbs);
-                    sql.CloseCon();
+                case IM_GetMAC:
+                    var s = MACFinder.getMacByIp(GetIPAddress());
+                    bw.Write(s);
                     break;
                 case IM_NewServiceList:
                     List<ServicesObject> sros = DeserializeXMLFileToObject<List<ServicesObject>>(br.ReadString());
                     sql.NewServices(sros);
                     sql.CloseCon();
-
-                    //Port scan
-                    //Broadcast
                     break;
                 case IM_NewWhitelists:
                     List<Whitelists> wls = DeserializeXMLFileToObject<List<Whitelists>>(br.ReadString());
@@ -210,74 +149,35 @@ namespace DuckServer
             }
         }
 
-        public String RequestParam(byte code)
+        public static string GetIPAddress()
         {
-            bw.Write(code);
-            return br.ReadString();
-        }
-
-        
-
-        /*public List<ServicesObject> GetActiveServices()
-        {
-            MSSQL ms = new MSSQL();
-            List<ServicesObject> sos = ms.GetServices();
-            List<String> ips = ms.GetIPs();
-
-            IPPS = new List<IPPlusStatus>();
-            count = 0;
-            max = ips.Count;
-
-            foreach (String ip in ips)
+            IPHostEntry Host = default(IPHostEntry);
+            string Hostname = System.Environment.MachineName;
+            Host = Dns.GetHostEntry(Hostname);
+            IPAddress targetIPA = IPAddress.Parse(Service.GetIPFromConfig());
+            String IPAddresss = "";
+            int best = 0;
+            foreach (IPAddress IP in Host.AddressList)
             {
-                IPPlusStatus ipps = new IPPlusStatus { IP = "0.0.0.0", Status = KnownHost.STATE_UNKNOWN };
-
-                Thread t = new Thread(() => ipps = HostScan.run(ip, 25568));
-                t.Start();
-                t.Join();
-                if (!ipps.IP.Equals("0.0.0.0"))
+                if (IP.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    IPPS.Add(ipps);
-                }
-
-                count++;
-                if (count == max)
-                {
-                    foreach (IPPlusStatus iss in IPPS)
+                    int matches = 0;
+                    for (int i = 0; i < 4; i++)
                     {
-                        if (iss.Status == KnownHost.STATE_ONLINE)
+                        if (IP.GetAddressBytes()[i] == targetIPA.GetAddressBytes()[i])
                         {
-                            try
-                            {
-                                ServiceConn iMC = new ServiceConn();
-                                iMC.setConnParams(iss.IP, 25568);
-                                iMC.SetupConn();
-
-                                string guid = iMC.RequestParam(IM_GetIdentity);
-
-                                foreach (ServicesObject so in sos)
-                                {
-                                    if (kh.GUID.Trim().Equals(guid))
-                                    {
-                                        kh.status = KnownHost.STATE_ONLINE;
-                                        kh.version = version;
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e.Message);
-                                Console.WriteLine(e.Source);
-                                Console.WriteLine(e.StackTrace);
-                            }
+                            matches++;
                         }
+                    }
+                    if (matches > best)
+                    {
+                        best = matches;
+                        IPAddresss = Convert.ToString(IP);
                     }
                 }
             }
-            Console.Write("Finished the procedure");
-            ms.CloseCon();
-            return khs;
-        }*/
+            return IPAddresss;
+        }
 
         public const int IM_Hello = 25050520;      // Hello
         public const byte IM_OK = 0;           // OK

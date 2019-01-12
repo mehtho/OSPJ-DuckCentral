@@ -111,6 +111,10 @@ namespace InstantMessenger
         public const byte IM_GetDatabases = 63;
         public const byte IM_NewDatabases = 65;
         public const byte IM_NoMoreDatabases = 66;
+        public const byte IM_NewServiceList = 70;
+        public const byte IM_NewWhitelists = 80;
+        public const byte IM_AddWhiteList = 81;
+        public const byte IM_RemoveWhitelist = 82;
         public const byte IM_Debug = 99;
 
         public static bool ValidateCert(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)

@@ -1,4 +1,5 @@
 ﻿using DuckPond.Models;
+using DuckPond.Models.Whitelists;
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
@@ -28,6 +29,14 @@ namespace DuckPond
                 string sql = "CREATE TABLE BigDatabase (ConnectionString TEXT, Preference INT PRIMARY KEY NOT NULL )";
                 SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
                 command.ExecuteNonQuery();
+
+                string sql2 = "CREATE TABLE Services (IP TEXT, Port INT, Preference INT PRIMARY KEY NOT NULL )";
+                SQLiteCommand command2 = new SQLiteCommand(sql2, m_dbConnection);
+                command2.ExecuteNonQuery();
+
+                string sql3 = "CREATE TABLE Whitelists (PID TEXT, VID TEXT, Serial TEXT, DateTime TEXT, WhitelistID INT PRIMARY KEY NOT NULL)";
+                SQLiteCommand command3 = new SQLiteCommand(sql3, m_dbConnection);
+                command3.ExecuteNonQuery();
             }
 
             m_dbConnection = new SQLiteConnection("Data Source="+FileLocation+";Version=3;");
@@ -124,6 +133,62 @@ namespace DuckPond
                 }
                 tr.Commit();
             }
+        }
+
+        public void NewServices(List<ServicesObject> sros)
+        {
+            using (SQLiteTransaction tr = m_dbConnection.BeginTransaction())
+            {
+                SQLiteCommand cmd = new SQLiteCommand("DELETE FROM Services", m_dbConnection);
+                cmd.ExecuteNonQuery();
+
+                foreach (ServicesObject sro in sros)
+                {
+                    this.AddService(sro);
+                }
+                tr.Commit();
+            }
+        }
+
+        public void AddService(ServicesObject sro)
+        {
+            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Services " +
+                "(Ip, Port, Preference) values ($Ip, $Port, $Preference) ", m_dbConnection);
+
+            cmd.Parameters.AddWithValue("$Ip", sro.IPAddress);
+            cmd.Parameters.AddWithValue("$Port", sro.port);
+            cmd.Parameters.AddWithValue("$Preference",sro.Preference);
+
+            cmd.ExecuteNonQuery();
+        }
+
+        public void NewWhitelists(List<Whitelists> wls)
+        {
+            using (SQLiteTransaction tr = m_dbConnection.BeginTransaction())
+            {
+                SQLiteCommand cmd = new SQLiteCommand("DELETE FROM Whitelists", m_dbConnection);
+                cmd.ExecuteNonQuery();
+
+                foreach (Whitelists wl in wls)
+                {
+                    this.AddWhitelist(wl);
+                }
+                tr.Commit();
+            }
+        }
+
+        public void AddWhitelist(Whitelists wl)
+        {
+            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Whitelists " +
+             "(PID, VID, Serial, WhitelistID, DateTime) values ($PID, $VID, $Serial, $WhitelistID, $DateTime) ", m_dbConnection);
+
+            cmd.Parameters.AddWithValue("$PID", wl.Pid1);
+            cmd.Parameters.AddWithValue("$VID", wl.Vid1);
+            cmd.Parameters.AddWithValue("$Serial", wl.SerialNumber1);
+            cmd.Parameters.AddWithValue("$WhitelistID", wl.WhitelistID1);
+            cmd.Parameters.AddWithValue("$DateTime", wl.Datetime1);
+
+            cmd.ExecuteNonQuery();
         }
 
         public static string ProgramFilesx86()

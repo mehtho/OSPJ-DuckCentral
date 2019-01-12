@@ -87,7 +87,7 @@ namespace InstantMessenger
             //if (_conn)
                 //CloseConn();
         }
-        void CloseConn() // Close connection.
+        public void CloseConn() // Close connection.
         {
             br.Close();
             bw.Close();

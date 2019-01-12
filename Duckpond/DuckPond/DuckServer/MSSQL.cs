@@ -25,6 +25,22 @@ namespace DuckPond
             Begin();
         }
 
+        public static bool ConnectionsExist()
+        {
+            Directory.CreateDirectory(ProgramFilesx86() + "\\DuckServer");
+            SQLiteClass sqlite = new SQLiteClass(ProgramFilesx86() + "\\DuckServer\\Information.dat");
+            List<DatabaseObject> connections = sqlite.GetConnections();
+
+            if (connections.Count > 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         private void Begin()
         {
             Directory.CreateDirectory(ProgramFilesx86() + "\\DuckServer");
@@ -44,7 +60,7 @@ namespace DuckPond
                         connectedTo = db.Preference;
                         break;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Console.WriteLine(e.Source);
                         Console.WriteLine(e.Message);
@@ -56,6 +72,7 @@ namespace DuckPond
             else
             {
                 //Write to events
+                Console.WriteLine("No Database configured");
             }
         }
 
@@ -290,7 +307,7 @@ namespace DuckPond
         {
             if (OpenCon())
             {
-                
+
                 SqlCommand comm = new SqlCommand("INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID) Values (@m, @i, @v, @da, @g)", cnn);
 
                 comm.Parameters.AddWithValue("m", kh.hostMAC);
@@ -303,13 +320,77 @@ namespace DuckPond
                 {
                     comm.ExecuteNonQuery();
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Console.WriteLine(e.Source);
                     Console.WriteLine(e.Message);
                     Console.WriteLine(e.StackTrace);
                 }
             }
+        }
+
+        public List<String> GetIPs()
+        {
+            List<String> ips = new List<string>();
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader reader;
+
+            cmd.CommandText = "SELECT * FROM dbo.CheckIPs";
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = cnn;
+
+            if (!OpenCon())
+            {
+                return new List<String>();
+            }
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                ips.Add(reader["IPAddress"].ToString());
+            }
+
+            return ips;
+        }
+
+        public void UpdateHost(KnownHost kh)
+        {
+            String q = "Update dbo.hosts set MAC = '@mac', IP = '@ip', version = '@version', DateAdded='@dateadded' Where Guid = '@guid'";
+            SqlCommand comm = new SqlCommand(q, cnn);
+
+            comm.Parameters.AddWithValue("mac", kh.hostMAC);
+            comm.Parameters.AddWithValue("ip", kh.hostIP.Trim());
+            comm.Parameters.AddWithValue("version", kh.version.Trim());
+            comm.Parameters.AddWithValue("dateadded", kh.dateAdded);
+            comm.Parameters.AddWithValue("guid", kh.GUID.Trim());
+
+            comm.ExecuteNonQuery();
+        }
+
+        //Service Methods
+
+        public List<ServicesObject> GetServices()
+        {
+            List<ServicesObject> sos = new List<ServicesObject>();
+            SqlCommand cmd = new SqlCommand();
+            SqlDataReader reader;
+
+            cmd.CommandText = "SELECT * FROM dbo.Services";
+            cmd.CommandType = CommandType.Text;
+            cmd.Connection = cnn;
+
+            if (!OpenCon())
+            {
+                return sos;
+            }
+            reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                sos.Add(new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]));
+            }
+
+            return sos;
         }
     }
 }

@@ -105,6 +105,6 @@ namespace DuckPond.Models.Whitelists
         public override String ToString()
         {
             return "Datetime: " + Datetime + " Pid: " + Pid + " Vid: " + Vid + " SerialNumber: " + SerialNumber + " WhitelistID: " + WhitelistID;
-        }
+    }
     }
 }

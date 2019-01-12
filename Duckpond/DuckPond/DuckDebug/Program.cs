@@ -22,12 +22,13 @@ namespace DuckDebug
         private static String targetIP = "192.168.1.231";
         static int Main(string[] args)
         {
-            SendNewHostEntry();
+            Service s = new Service();
+            //SendNewHostEntry();
             Console.ReadLine();
             return 0;
         }
 
-        public static void SendNewHostEntry()
+        /*public static void SendNewHostEntry()
         {
             SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86()+"\\DuckClient\\Information.dat");
             if (!sql.GetRegistered())
@@ -47,51 +48,27 @@ namespace DuckDebug
                 }
                 iM.Disconnect();
             }
-        }
+        }*/
 
-        public static string GetIPAddress()
-        {
-            IPHostEntry Host = default(IPHostEntry);
-            string Hostname = System.Environment.MachineName;
-            Host = Dns.GetHostEntry(Hostname);
-            IPAddress targetIPA = IPAddress.Parse(targetIP);
-            String IPAddresss = "";
-            int best = 0;
-            foreach (IPAddress IP in Host.AddressList)
-            {
-                if (IP.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                {
-                    int matches = 0;
-                    for(int i = 0; i < 4; i++)
-                    {
-                        if (IP.GetAddressBytes()[i] == targetIPA.GetAddressBytes()[i])
-                        {
-                            matches++;
-                        }
-                    }
-                    if (matches > best)
-                    {
-                        best = matches;
-                        IPAddresss = Convert.ToString(IP);
-                    }
-                }
-            }
-            return IPAddresss;
-        }
-
-        public static void GetVersionAndGUID()
+        public static VersionGUIDPair GetVersionAndGUID()
         {
             IMClient iM = new IMClient();
             iM.setConnParams(targetIP, 25567);
             iM.SetupConn();
-            Console.WriteLine(iM.RequestParam(IMClient.IM_GetIdentity));
+            String aguid = iM.RequestParam(IMClient.IM_GetIdentity);
             iM.Disconnect();
             iM.SetupConn();
-            Console.WriteLine(iM.RequestParam(IMClient.IM_GetVersion));
-            Console.ReadLine();
+            String aversion = iM.RequestParam(IMClient.IM_GetVersion);
+            return new VersionGUIDPair { Version = aversion, GUID = aguid };
         }
 
-        public static void SendDebugKnownHost(KnownHost kh)
+        public struct VersionGUIDPair
+        {
+            public String Version { get; set; }
+            public String GUID { get; set; }
+        }
+
+        public static void SendKnownHost(KnownHost kh)
         {
             //Send 1 Debug message
             IMClient im = new IMClient();
@@ -109,6 +86,15 @@ namespace DuckDebug
             Console.WriteLine(toSend);
 
             //Send 1 Debug message
+            IMClient im = new IMClient();
+            im.setConnParams(targetIP, 25567);
+            im.SetupConn();
+            im.SendSignal(IMClient.IM_Event, toSend);
+        }
+
+        public void SendEvent(Events ev)
+        {
+            String toSend = DoSerialize(ev);
             IMClient im = new IMClient();
             im.setConnParams(targetIP, 25567);
             im.SetupConn();
