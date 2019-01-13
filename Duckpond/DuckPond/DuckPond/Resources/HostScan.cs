@@ -1,4 +1,5 @@
 ﻿using DuckPond.Models;
+using DuckPond.Pages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,30 +31,33 @@ namespace DuckPond.Resources
         {
         }
 
-        public static IPPlusStatus run(String host, int port)
+        public static void run(String host, int port)
         {
             List<int> toRet = new List<int>();
             TcpClient tcp = new TcpClient();
-                try
+            try
+            {
+                var client = new TcpClient();
+                var result = client.BeginConnect(host.Trim(), port, null, null);
+
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(4));
+
+                if (!success)
                 {
-                    tcp = new TcpClient(host.Trim(), port);
-                    return new IPPlusStatus { IP = host, Status = KnownHost.STATE_ONLINE };
+                    KnownHosts.IPPS.Add(new IPPlusStatus { IP = host, Status = KnownHost.STATE_UNKNOWN });
                 }
-                catch(Exception e)
+                else
                 {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.Source);
-                    Console.WriteLine(e.StackTrace);
+                    KnownHosts.IPPS.Add(new IPPlusStatus { IP = host, Status = KnownHost.STATE_ONLINE });
+                    KnownHosts.count--;
+                    tcp.Close();
+                    return;
                 }
-                finally
-                {
-                    try
-                    {
-                        tcp.Close();
-                    }
-                    catch { }
-                }
-             return new IPPlusStatus { IP = host, Status = KnownHost.STATE_OFFLINE };
+            }
+            catch (Exception)
+            {
+
+            }
         }
     }
 

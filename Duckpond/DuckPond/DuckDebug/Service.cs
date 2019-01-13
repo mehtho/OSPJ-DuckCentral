@@ -1,4 +1,5 @@
-﻿using DuckPond;
+﻿using DuckDebug;
+using DuckPond;
 using DuckPond.Models;
 using InstantMessenger;
 using Microsoft.Win32;
@@ -8,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
@@ -36,6 +38,47 @@ namespace DuckServer
 
             Listen();
         }
+
+        /*private static void RegisterAsNewHost()
+        {
+            if (!(new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckClient\\Information.dat").GetRegistered()))
+            {
+                SendNewHostEntry();
+            }
+        }
+
+        private static void SendNewHostEntry()
+        {
+            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckClient\\Information.dat");
+            if (!sql.GetRegistered())
+            {
+                KnownHost kh = new KnownHost();
+                kh.hostMAC = MACFinder.getMacByIp(GetIPFromConfig());
+                Console.WriteLine("MAC" + kh.hostMAC);
+                kh.version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                kh.GUID = sql.GetGUID();
+
+                List<ServicesObject> sros = sql.GetServices();
+                foreach(ServicesObject sro in sros)
+                {
+                    try
+                    {
+                        IMClient iM = new IMClient();
+                        iM.setConnParams(sro.IPAddress, sro.port);
+                        iM.SetupConn();
+                        if (iM.SendSignalWithRet(IMClient.IM_NewIdentity, Program.DoSerialize(kh)))
+                        {
+                            sql.SetRegistered(true);
+                        }
+                        iM.Disconnect();
+                    }
+                    catch (SocketException)
+                    {
+
+                    }
+                }
+            }
+        }*/
 
         private static void WriteKey(String localIP)
         {

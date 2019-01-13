@@ -93,6 +93,12 @@ namespace DuckServer
             public String IP;
         }
 
+        private struct IPPSandThread
+        {
+            public Thread t { get; set; }
+            public IPPlusStatus ipps { get; set; }
+        }
+
         private static List<GUIDMACVersionIP> GetActiveHosts()
         {
             MSSQL ms = new MSSQL();
@@ -101,21 +107,21 @@ namespace DuckServer
             List<GUIDMACVersionIP> gmvis = new List<GUIDMACVersionIP>();
 
             IPPS = new List<IPPlusStatus>();
-            count = 0;
-            max = ips.Count;
 
+            List<Thread> threads = new List<Thread>();
             foreach (String ip in ips)
             {
-                IPPlusStatus ipps = new IPPlusStatus { IP = "0.0.0.0", Status = KnownHost.STATE_UNKNOWN };
-
-                Thread t = new Thread(() => ipps = HostScan.run(ip, 25567));
-                t.Start();
-                t.Join();
-                if (!ipps.IP.Equals("0.0.0.0"))
-                {
-                    IPPS.Add(ipps);
-                }
+                Thread th = new Thread(() => HostScan.run(ip, 25567));
+                th.Start();
+                threads.Add(th);
             }
+
+            foreach(Thread th in threads)
+            {
+                th.Join();
+            }
+
+            Console.WriteLine(IPPS.Count+" ipps");
 
             foreach (IPPlusStatus iss in IPPS)
             {
@@ -143,11 +149,9 @@ namespace DuckServer
                         };
                         gmvis.Add(gmvi);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        Console.WriteLine(e.Message);
-                        Console.WriteLine(e.Source);
-                        Console.WriteLine(e.StackTrace);
+                        Console.WriteLine(iss.IP+" is inactive.");
                     }
                 }
             }
@@ -158,20 +162,21 @@ namespace DuckServer
 
         private static void RoutineCheck()
         {
+            Console.WriteLine("Routine Check");
             if (!MSSQL.ConnectionsExist())
             {
                 Console.WriteLine("No database connections configured");
                 return;
             }
-
-
-            Console.WriteLine("ROUTINE CHECK");
+            Console.WriteLine("Getting active hosts");
             List<GUIDMACVersionIP> gmvis = GetActiveHosts();
+            Console.WriteLine(gmvis.Count+" active hosts");
             MSSQL ms = new MSSQL();
             List<KnownHost> khs = ms.GetKnownHosts();
 
             foreach(GUIDMACVersionIP gmvi in gmvis)
             {
+                Console.WriteLine("173");
                 bool found = false;
                 foreach (KnownHost kh in khs)
                 {
@@ -206,10 +211,15 @@ namespace DuckServer
                         }
                         break;
                     }
-                    if (!found)
-                    {
-                        ms.AddKnownHost(new KnownHost(gmvi.MAC, gmvi.IP, gmvi.Version, DateTime.Now, gmvi.GUID));
-                    }
+                }
+                if (!found)
+                {
+                    ms.AddKnownHost(new KnownHost(gmvi.MAC, gmvi.IP, gmvi.Version, DateTime.Now, gmvi.GUID));
+                    IMClient imc = new IMClient();
+                    imc.setConnParams(gmvi.IP, 25567);
+                    imc.SetupConn();
+                    imc.SendSignal(ServiceConn.IM_RegistrationDone, gmvi.GUID);
+                    imc.Disconnect();
                 }
             }
         }

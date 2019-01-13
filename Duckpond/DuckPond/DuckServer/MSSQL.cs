@@ -85,7 +85,10 @@ namespace DuckPond
         {
             try
             {
-                cnn.Open();
+                if (!(cnn.State == ConnectionState.Open))
+                {
+                    cnn.Open();
+                }
                 return true;
             }
             catch (InvalidOperationException e)
@@ -307,26 +310,50 @@ namespace DuckPond
         {
             if (OpenCon())
             {
-
-                SqlCommand comm = new SqlCommand("INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID) Values (@m, @i, @v, @da, @g)", cnn);
-
-                comm.Parameters.AddWithValue("m", kh.hostMAC);
-                comm.Parameters.AddWithValue("i", kh.hostIP.Trim());
-                comm.Parameters.AddWithValue("v", kh.version.Trim());
-                comm.Parameters.AddWithValue("da", kh.dateAdded);
-                comm.Parameters.AddWithValue("g", kh.GUID.Trim());
-
-                try
+                if (KnownHostDupeCheck(kh.GUID))
                 {
-                    comm.ExecuteNonQuery();
+                    this.UpdateHost(kh);
                 }
-                catch (Exception e)
+                else
                 {
-                    Console.WriteLine(e.Source);
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.StackTrace);
+                    SqlCommand comm = new SqlCommand("INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID) Values (@m, @i, @v, @da, @g)", cnn);
+
+                    comm.Parameters.AddWithValue("m", kh.hostMAC);
+                    comm.Parameters.AddWithValue("i", kh.hostIP.Trim());
+                    comm.Parameters.AddWithValue("v", kh.version.Trim());
+                    comm.Parameters.AddWithValue("da", kh.dateAdded);
+                    comm.Parameters.AddWithValue("g", kh.GUID.Trim());
+
+                    try
+                    {
+                        comm.ExecuteNonQuery();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Source);
+                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e.StackTrace);
+                    }
                 }
             }
+        }
+
+        public bool KnownHostDupeCheck(String GUID)
+        {
+            if (OpenCon())
+            {
+                SqlCommand comm = new SqlCommand("SELECT GUID FROM dbo.hosts WHERE GUID = @guid", cnn);
+                comm.Parameters.AddWithValue("guid",GUID);
+
+                var reader = comm.ExecuteReader();
+                while (reader.Read())
+                {
+                    reader.Close();
+                    return true;
+                }
+                reader.Close();
+            }
+            return false;
         }
 
         public List<String> GetIPs()

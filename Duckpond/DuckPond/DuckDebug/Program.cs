@@ -23,32 +23,9 @@ namespace DuckDebug
         static int Main(string[] args)
         {
             Service s = new Service();
-            //SendNewHostEntry();
             Console.ReadLine();
             return 0;
         }
-
-        /*public static void SendNewHostEntry()
-        {
-            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86()+"\\DuckClient\\Information.dat");
-            if (!sql.GetRegistered())
-            {
-                KnownHost kh = new KnownHost();
-                kh.hostMAC = MACFinder.getMacByIp(GetIPAddress());
-                Console.WriteLine("MAC" + kh.hostMAC);
-                kh.version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-                kh.GUID = sql.GetGUID();
-
-                IMClient iM = new IMClient();
-                iM.setConnParams(targetIP, 25567);
-                iM.SetupConn();
-                if (iM.SendSignalWithRet(IMClient.IM_NewIdentity, DoSerialize(kh)))
-                {
-                    sql.SetRegistered(true);
-                }
-                iM.Disconnect();
-            }
-        }*/
 
         public static VersionGUIDPair GetVersionAndGUID()
         {

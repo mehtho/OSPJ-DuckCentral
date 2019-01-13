@@ -375,34 +375,44 @@ namespace DuckPond
         //Known Host Methods
         public List<KnownHost> GetKnownHosts()
         {
-            List<KnownHost> khs = new List<KnownHost>();
-            SqlCommand cmd = new SqlCommand();
-            SqlDataReader reader;
-
-            cmd.CommandText = "SELECT * FROM dbo.Hosts ORDER BY DateAdded desc";
-            cmd.CommandType = CommandType.Text;
-            cmd.Connection = cnn;
-
-            if (!OpenCon())
+            try
             {
+                List<KnownHost> khs = new List<KnownHost>();
+                SqlCommand cmd = new SqlCommand();
+                SqlDataReader reader;
+
+                cmd.CommandText = "SELECT * FROM dbo.Hosts ORDER BY DateAdded desc";
+                cmd.CommandType = CommandType.Text;
+                cmd.Connection = cnn;
+
+                if (!OpenCon())
+                {
+                    return new List<KnownHost>();
+                }
+                reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    KnownHost kh = new KnownHost(
+                        reader["MAC"].ToString(),
+                        reader["IP"].ToString(),
+                        reader["Version"].ToString(),
+                        (DateTime)reader["DateAdded"],
+                        reader["GUID"].ToString()
+                        );
+                    khs.Add(kh);
+                }
+
+                CloseCon();
+                return khs;
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.StackTrace);
                 return new List<KnownHost>();
             }
-            reader = cmd.ExecuteReader();
-
-            while (reader.Read())
-            {
-                KnownHost kh = new KnownHost(
-                    reader["MAC"].ToString(),
-                    reader["IP"].ToString(),
-                    reader["Version"].ToString(),
-                    (DateTime)reader["DateAdded"],
-                    reader["GUID"].ToString()
-                    );
-                khs.Add(kh);
-            }
-
-            CloseCon();
-            return khs;
         }
 
         public void AddKnownHost(KnownHost kh)
