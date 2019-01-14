@@ -13,6 +13,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace DuckServer
 {
@@ -26,6 +28,7 @@ namespace DuckServer
             var timer = new Timer((e) =>
             {
                 RoutineCheck();
+
             }, null, startTimeSpan, periodTimeSpan);
 
             Service p = new Service();
@@ -121,7 +124,7 @@ namespace DuckServer
                 th.Join();
             }
 
-            Console.WriteLine(IPPS.Count+" ipps");
+            Console.WriteLine(IPPS.Count+" live hosts");
 
             foreach (IPPlusStatus iss in IPPS)
             {
@@ -151,18 +154,15 @@ namespace DuckServer
                     }
                     catch (Exception)
                     {
-                        Console.WriteLine(iss.IP+" is inactive.");
+
                     }
                 }
             }
-            
-            Console.Write("Finished the procedure");
             return gmvis;
         }
 
         private static void RoutineCheck()
         {
-            Console.WriteLine("Routine Check");
             if (!MSSQL.ConnectionsExist())
             {
                 Console.WriteLine("No database connections configured");
@@ -170,13 +170,12 @@ namespace DuckServer
             }
             Console.WriteLine("Getting active hosts");
             List<GUIDMACVersionIP> gmvis = GetActiveHosts();
-            Console.WriteLine(gmvis.Count+" active hosts");
+            Console.WriteLine(gmvis.Count+" running clients");
             MSSQL ms = new MSSQL();
             List<KnownHost> khs = ms.GetKnownHosts();
 
             foreach(GUIDMACVersionIP gmvi in gmvis)
             {
-                Console.WriteLine("173");
                 bool found = false;
                 foreach (KnownHost kh in khs)
                 {
@@ -220,6 +219,55 @@ namespace DuckServer
                     imc.SetupConn();
                     imc.SendSignal(ServiceConn.IM_RegistrationDone, gmvi.GUID);
                     imc.Disconnect();
+                }
+            }
+
+            //Version broadcast
+            
+            ms.GetWhitelists();
+
+            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckServer\\Information.dat");
+            sql.NewServices(ms.GetServices());
+            sql.SetLastUpdated(SQLiteClass.GET_SERVICE_LIST, ms.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST));
+            sql.NewWhitelists(ms.GetWhitelists());
+            sql.SetLastUpdated(SQLiteClass.GET_WHITELIST_LIST, ms.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST));
+
+            DateTime serviceTime = sql.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST);
+            DateTime whitelistTime = sql.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST);
+
+            foreach (GUIDMACVersionIP gmvi in gmvis)
+            {
+                IMClient imclient = new IMClient();
+                imclient.setConnParams(gmvi.IP, 25567);
+                Thread th = new Thread(() => SendNewDataVersion(imclient, serviceTime, whitelistTime));
+                th.Start();
+            }
+        }
+
+        private static void SendNewDataVersion(IMClient imclient, DateTime st, DateTime wt)
+        {
+            imclient.SetupConn();
+            imclient.SendSignal(ServiceConn.IM_NewVersionsCheck, DoSerialize(new DateTimeVersions {ServiceDateTime = st, WhitelistDateTime = wt })); 
+        }
+
+        public struct DateTimeVersions
+        {
+            public DateTime ServiceDateTime;
+            public DateTime WhitelistDateTime;
+        }
+
+        public static String DoSerialize(Object o)
+        {
+            XmlSerializer xsSubmit = new XmlSerializer(o.GetType());
+            var xml = "";
+
+            using (var sww = new StringWriter())
+            {
+                using (XmlWriter writer = XmlWriter.Create(sww))
+                {
+                    xsSubmit.Serialize(writer, o);
+                    xml = sww.ToString(); // Your XML
+                    return xml;
                 }
             }
         }

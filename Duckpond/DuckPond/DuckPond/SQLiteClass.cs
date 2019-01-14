@@ -56,6 +56,20 @@ namespace DuckPond
                 SQLiteCommand command6 = new SQLiteCommand(sql6, m_dbConnection);
                 command6.ExecuteNonQuery();
 
+                string sql7 = "CREATE TABLE LastUpdatedTable (DateTime TEXT, What TEXT PRIMARY KEY NOT NULL )";
+                SQLiteCommand command7 = new SQLiteCommand(sql7, m_dbConnection);
+                command7.ExecuteNonQuery();
+
+                string sql8 = "INSERT INTO LastUpdatedTable (DateTime, What) VALUES ($dt,'Whitelist')";
+                SQLiteCommand command8 = new SQLiteCommand(sql8, m_dbConnection);
+                command8.Parameters.AddWithValue("$dt", DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture).ToString());
+                command8.ExecuteNonQuery();
+
+                string sql9 = "INSERT INTO LastUpdatedTable (DateTime, What) VALUES ($dt,'Service')";
+                SQLiteCommand command9 = new SQLiteCommand(sql9, m_dbConnection);
+                command9.Parameters.AddWithValue("$dt", DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture).ToString());
+                command9.ExecuteNonQuery();
+
                 m_dbConnection.ChangePassword("1CF01FBFAA598E96241D4A8D2802E3B39899E34A2B61BC3BEFEEECDCD592A58C4A8E20D54222F9849CE6FEBC2A4CD64E13CE02DAB71CFE4EF7655CF72A28FF06");
             }
 
@@ -242,6 +256,63 @@ namespace DuckPond
 
             return svos;
         }
+
+        public DateTime GetLastUpdated(byte b)
+        {
+            String s;
+            if (b == GET_SERVICE_LIST)
+            {
+                s = "SELECT DateTime FROM LastUpdatedTable WHERE What='Service'";
+            }
+            else if(b == GET_WHITELIST_LIST)
+            {
+                s = "SELECT DateTime FROM LastUpdatedTable WHERE What='Whitelist'";
+            }
+            else
+            {
+                return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
+            }
+            SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection);
+            SQLiteDataReader reader = sql.ExecuteReader();
+
+            while (reader.Read())
+            {
+                try
+                {
+                    return (DateTime)reader["DateTime"];
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.Source);
+                    Console.WriteLine(e.StackTrace);
+                }
+            }
+            return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        public void SetLastUpdated(byte b, DateTime dt)
+        {
+            String s;
+            if (b == GET_SERVICE_LIST)
+            {
+                s = "UPDATE LastUpdatedTable SET DateTime = $dt WHERE What='Service'";
+            }
+            else if (b == GET_WHITELIST_LIST)
+            {
+                s = "UPDATE LastUpdatedTable SET DateTime = $dt WHERE What='Whitelist'";
+            }
+            else
+            {
+                return;
+            }
+            SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection);
+            sql.Parameters.AddWithValue("$dt", dt);
+            sql.ExecuteNonQuery();
+        }
+
+        public const byte GET_SERVICE_LIST = 0;
+        public const byte GET_WHITELIST_LIST = 2;
 
         public static string ProgramFilesx86()
         {

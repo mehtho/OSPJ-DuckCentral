@@ -554,6 +554,7 @@ namespace DuckPond
                 sos.Add(new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]));
             }
 
+            CloseCon();
             return sos;
         }
 
@@ -591,6 +592,115 @@ namespace DuckPond
                 }
             }
         }
+
+        public DateTime GetLastUpdated(byte b)
+        {
+            if (!OpenCon())
+            {
+                return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                String s;
+                if (b == GET_SERVICE_LIST)
+                {
+                    s = "Service";
+                }
+                else if (b == GET_WHITELIST_LIST)
+                {
+                    s = "Whitelist";
+                }
+                else
+                {
+                    return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
+                }
+                SqlCommand cmd = new SqlCommand();
+                SqlDataReader reader;
+
+                cmd.CommandText = "SELECT LastUpdated FROM dbo.LastUpdated WHERE What ='@wt'";
+                cmd.Parameters.AddWithValue("wt", s);
+                cmd.CommandType = CommandType.Text;
+                cmd.Connection = cnn;
+
+                reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    return (DateTime)reader["LastUpdated"];
+                }
+                CloseCon();
+                return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
+            }
+        }
+
+        public void SetLastUpdated(DateTime dt, byte b)
+        {
+            if (!OpenCon())
+            {
+                return;
+            }
+            else
+            {
+                String s;
+                if (b == GET_SERVICE_LIST)
+                {
+                    s = "Service";
+                }
+                else if (b == GET_WHITELIST_LIST)
+                {
+                    s = "Whitelist";
+                }
+                else
+                {
+                    return;
+                }
+
+                SqlCommand cmd = new SqlCommand();
+
+                cmd.CommandText = "UPDATE dbo.LastUpdated SET LastUpdated = @dt WHERE What = @wt";
+                cmd.Parameters.AddWithValue("wt", s);
+                cmd.Parameters.AddWithValue("dt", dt);
+                cmd.CommandType = CommandType.Text;
+                cmd.Connection = cnn;
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void FixLastUpdated(byte b)
+        {
+            if (!OpenCon())
+            {
+                return;
+            }
+            else
+            {
+                String s;
+                if (b == GET_SERVICE_LIST)
+                {
+                    s = "Service";
+                }
+                else if (b == GET_WHITELIST_LIST)
+                {
+                    s = "Whitelist";
+                }
+                else
+                {
+                    return;
+                }
+
+                SqlCommand cmd = new SqlCommand();
+
+                cmd.CommandText = "INSERT INTO LastUpdated (LastUpdated, What) VALUES (@dt, @wt)";
+                cmd.Parameters.AddWithValue("wt", s);
+                cmd.Parameters.AddWithValue("dt", DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture));
+                cmd.CommandType = CommandType.Text;
+                cmd.Connection = cnn;
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public const byte GET_SERVICE_LIST = 0;
+        public const byte GET_WHITELIST_LIST = 2;
 
     }
 }

@@ -37,6 +37,20 @@ namespace DuckPond
                 string sql3 = "CREATE TABLE Whitelists (PID TEXT, VID TEXT, Serial TEXT, DateTime TEXT, WhitelistID INT PRIMARY KEY NOT NULL)";
                 SQLiteCommand command3 = new SQLiteCommand(sql3, m_dbConnection);
                 command3.ExecuteNonQuery();
+
+                string sql7 = "CREATE TABLE LastUpdatedTable (DateTime TEXT, What TEXT PRIMARY KEY NOT NULL )";
+                SQLiteCommand command7 = new SQLiteCommand(sql7, m_dbConnection);
+                command7.ExecuteNonQuery();
+
+                string sql8 = "INSERT INTO LastUpdatedTable (DateTime, What) VALUES ($dt,'Whitelist')";
+                SQLiteCommand command8 = new SQLiteCommand(sql8, m_dbConnection);
+                command8.Parameters.AddWithValue("$dt", DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture).ToString());
+                command8.ExecuteNonQuery();
+
+                string sql9 = "INSERT INTO LastUpdatedTable (DateTime, What) VALUES ($dt,'Service')";
+                SQLiteCommand command9 = new SQLiteCommand(sql9, m_dbConnection);
+                command9.Parameters.AddWithValue("$dt", DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture).ToString());
+                command9.ExecuteNonQuery();
             }
 
             m_dbConnection = new SQLiteConnection("Data Source="+FileLocation+";Version=3;");
@@ -162,6 +176,21 @@ namespace DuckPond
             cmd.ExecuteNonQuery();
         }
 
+        public List<ServicesObject> GetServices()
+        {
+            List<ServicesObject> sros = new List<ServicesObject>();
+            SQLiteCommand cmd = new SQLiteCommand("SELECT * From Services", m_dbConnection);
+            var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                ServicesObject sro = new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]);
+                sros.Add(sro);
+            }
+
+            return sros;
+        }
+
         public void NewWhitelists(List<Whitelists> wls)
         {
             using (SQLiteTransaction tr = m_dbConnection.BeginTransaction())
@@ -190,6 +219,78 @@ namespace DuckPond
 
             cmd.ExecuteNonQuery();
         }
+
+        public List<Whitelists> GetWhitelists()
+        {
+            List<Whitelists> wls = new List<Whitelists>();
+            SQLiteCommand cmd = new SQLiteCommand("SELECT * From Whitelists", m_dbConnection);
+            var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                Whitelists wl = new Whitelists(DateTime.Parse(reader["DateTime"].ToString(), System.Globalization.CultureInfo.InvariantCulture), reader["Vid"].ToString(), reader["Pid"].ToString(), reader["Serial"].ToString(), (int)reader["WhitelistID"]);
+                wls.Add(wl);
+            }
+
+            return wls;
+        }
+
+        public DateTime GetLastUpdated(byte b)
+        {
+            String s;
+            if (b == GET_SERVICE_LIST)
+            {
+                s = "SELECT DateTime FROM LastUpdatedTable WHERE What='Service'";
+            }
+            else if (b == GET_WHITELIST_LIST)
+            {
+                s = "SELECT DateTime FROM LastUpdatedTable WHERE What='Whitelist'";
+            }
+            else
+            {
+                return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
+            }
+            SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection);
+            SQLiteDataReader reader = sql.ExecuteReader();
+
+            while (reader.Read())
+            {
+                try
+                {
+                    return DateTime.Parse(reader["DateTime"].ToString(), System.Globalization.CultureInfo.InvariantCulture);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.Source);
+                    Console.WriteLine(e.StackTrace);
+                }
+            }
+            return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        public void SetLastUpdated(byte b, DateTime dt)
+        {
+            String s;
+            if (b == GET_SERVICE_LIST)
+            {
+                s = "UPDATE LastUpdatedTable SET DateTime = $dt WHERE What='Service'";
+            }
+            else if (b == GET_WHITELIST_LIST)
+            {
+                s = "UPDATE LastUpdatedTable SET DateTime = $dt WHERE What='Whitelist'";
+            }
+            else
+            {
+                return;
+            }
+            SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection);
+            sql.Parameters.AddWithValue("$dt", dt);
+            sql.ExecuteNonQuery();
+        }
+
+        public const byte GET_SERVICE_LIST = 0;
+        public const byte GET_WHITELIST_LIST = 2;
 
         public static string ProgramFilesx86()
         {

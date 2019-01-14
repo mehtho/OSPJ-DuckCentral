@@ -14,6 +14,7 @@ using System.Reflection;
 using DuckPond.Models.Whitelists;
 using DuckDebug;
 using System.Net;
+using InstantMessenger;
 
 namespace DuckServer
 {
@@ -41,12 +42,9 @@ namespace DuckServer
         {
             try
             {
-                Console.WriteLine("[{0}] New connection!", DateTime.Now);
                 netStream = client.GetStream();
                 ssl = new SslStream(netStream, false);
                 ssl.AuthenticateAsServer(prog.cert, false, SslProtocols.Tls, true);
-                Console.WriteLine("[{0}] Connection authenticated!", DateTime.Now);
-                // Now we have encrypted connection.
 
                 br = new BinaryReader(ssl, Encoding.UTF8);
                 bw = new BinaryWriter(ssl, Encoding.UTF8);
@@ -77,7 +75,6 @@ namespace DuckServer
                 ssl.Close();
                 netStream.Close();
                 client.Close();
-                Console.WriteLine("[{0}] End of connection!", DateTime.Now);
             }
             catch { }
         }
@@ -132,15 +129,28 @@ namespace DuckServer
                         sql.SetRegistered(true);
                     }
                     break;
+                case IM_NewVersionsCheck:
+                    DateTimeVersions dtv = DeserializeXMLFileToObject<DateTimeVersions>(br.ReadString());
+                    if (DateTime.Compare(dtv.ServiceDateTime, sql.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST)) >0 || DateTime.Compare(dtv.WhitelistDateTime, sql.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST))>0)
+                    {
+                        IMClient imc = new IMClient();
+                        imc.setConnParams(GetOriginIP(), 25568);
+                        imc.SetupConn();
+                        imc.SendSignal(IM_NewVersions, "2");
+                        imc.Disconnect();
+                    }
+                    break;
+                case IM_NewVersions:
+                    DateTimeVersions dtv1 = DeserializeXMLFileToObject<DateTimeVersions>(br.ReadString());
+                    UpdateStuff(dtv1);
+                    break;
                 case IM_NewServiceList:
                     List<ServicesObject> sros = DeserializeXMLFileToObject<List<ServicesObject>>(br.ReadString());
                     sql.NewServices(sros);
-                    sql.CloseCon();
                     break;
                 case IM_NewWhitelists:
                     List<Whitelists> wls = DeserializeXMLFileToObject<List<Whitelists>>(br.ReadString());
                     sql.NewWhitelists(wls);
-                    sql.CloseCon();
                     break;
                 case IM_AddWhiteList:
                     break;
@@ -153,6 +163,17 @@ namespace DuckServer
                 default:
                     break;
             }
+        }
+
+        public String GetOriginIP()
+        {
+            var pi = netStream.GetType().GetProperty("Socket", BindingFlags.NonPublic | BindingFlags.Instance);
+            var socketIp = ((Socket)pi.GetValue(netStream, null)).RemoteEndPoint.ToString();
+            int index = socketIp.IndexOf(":");
+            if (index > 0)
+                socketIp = socketIp.Substring(0, index);
+
+            return socketIp;
         }
 
         public static string GetIPAddress()
@@ -185,6 +206,23 @@ namespace DuckServer
             return IPAddresss;
         }
 
+        public void UpdateStuff(DateTimeVersions dtv1)
+        {
+            SQLiteClass sql = new SQLiteClass(ProgramFilesx86() + "\\DuckClient\\Information.dat");
+            sql.NewServices(dtv1.ServiceVersion);
+            sql.NewWhitelists(dtv1.WhitelistVersion);
+            sql.SetLastUpdated(SQLiteClass.GET_SERVICE_LIST, dtv1.ServiceDateTime);
+            sql.SetLastUpdated(SQLiteClass.GET_WHITELIST_LIST, dtv1.WhitelistDateTime);
+        }
+
+        public struct DateTimeVersions
+        {
+            public DateTime ServiceDateTime;
+            public DateTime WhitelistDateTime;
+            public List<ServicesObject> ServiceVersion;
+            public List<Whitelists> WhitelistVersion;
+        }
+
         public const int IM_Hello = 25050520;      // Hello
         public const byte IM_OK = 0;           // OK
         public const byte IM_Login = 1;        // Login
@@ -195,6 +233,8 @@ namespace DuckServer
         public const byte IM_GetVersion = 32;
         public const byte IM_GetMAC = 33;
         public const byte IM_RegistrationDone = 34;
+        public const byte IM_NewVersionsCheck = 50;
+        public const byte IM_NewVersions = 51;
         public const byte IM_AddDatabases = 62;
         public const byte IM_GetDatabases = 63;
         public const byte IM_NewDatabases = 65;

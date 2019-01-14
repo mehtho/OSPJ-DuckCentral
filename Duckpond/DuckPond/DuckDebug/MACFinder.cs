@@ -17,8 +17,6 @@ namespace DuckServer
             IPAddress parsedIP = IPAddress.Parse(ip);
             IPAddress gateway = GetGateway(parsedIP, GetSubnetMask(parsedIP));
 
-            Console.WriteLine("GATEWAY: " + gateway);
-
             var macIpPairs = GetAllMacAddressesAndIppairs(); 
 
             int index = macIpPairs.FindIndex(x => x.IpAddress == gateway.ToString());

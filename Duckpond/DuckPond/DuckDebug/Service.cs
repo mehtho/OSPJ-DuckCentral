@@ -120,8 +120,11 @@ namespace DuckServer
                         Object o = key.GetValue("PrefIP");
                         if (o != null)
                         {
-                            Console.WriteLine(o.ToString());
                             return o.ToString();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Registry entry was null");
                         }
                     }
                     else
@@ -130,14 +133,15 @@ namespace DuckServer
                     }
                 }
             }
-
+            //DELEGATE SERVICE IPS LATER
             foreach(ServicesObject sro in sros)
             {
                 IMClient imc = new IMClient();
+                serviceIP = sro.IPAddress;
                 try
                 {
-                    imc.SetupConn();
                     imc.setConnParams(sro.IPAddress, sro.port);
+                    imc.SetupConn();
                     imc.Disconnect();
                     serviceIP = sro.IPAddress;
                     break;
@@ -149,11 +153,9 @@ namespace DuckServer
             }
             try
             {
-                String xsss = GetIPAddressLike(serviceIP);
-                Console.WriteLine();
-                return xsss;
+                return GetIPAddressLike(serviceIP);
             }
-            catch
+            catch(Exception e)
             {
 
             }
@@ -167,7 +169,7 @@ namespace DuckServer
             IPHostEntry Host = default(IPHostEntry);
             string Hostname = System.Environment.MachineName;
             Host = Dns.GetHostEntry(Hostname);
-            IPAddress targetIPA = IPAddress.Parse(target);
+            IPAddress targetIPA = IPAddress.Parse(target.Trim());
             String IPAddresss = "";
             int best = 0;
             foreach (IPAddress IP in Host.AddressList)

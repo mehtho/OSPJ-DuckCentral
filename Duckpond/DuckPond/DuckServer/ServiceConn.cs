@@ -13,6 +13,7 @@ using DuckPond;
 using System.Reflection;
 using DuckPond.Models.Whitelists;
 using DuckPond.Resources;
+using InstantMessenger;
 
 namespace DuckServer
 {
@@ -52,11 +53,9 @@ namespace DuckServer
         {
             try
             {
-                Console.WriteLine("[{0}] New connection!", DateTime.Now);
                 netStream = client.GetStream();
                 ssl = new SslStream(netStream, false);
                 ssl.AuthenticateAsServer(prog.cert, false, SslProtocols.Tls, true);
-                Console.WriteLine("[{0}] Connection authenticated!", DateTime.Now);
                 // Now we have encrypted connection.
 
                 br = new BinaryReader(ssl, Encoding.UTF8);
@@ -88,7 +87,6 @@ namespace DuckServer
                 ssl.Close();
                 netStream.Close();
                 client.Close();
-                Console.WriteLine("[{0}] End of connection!", DateTime.Now);
             }
             catch { }
         }
@@ -139,15 +137,10 @@ namespace DuckServer
                 case IM_NewIdentity:
                     try
                     {
-                        var pi = netStream.GetType().GetProperty("Socket", BindingFlags.NonPublic | BindingFlags.Instance);
-                        var socketIp = ((Socket)pi.GetValue(netStream, null)).RemoteEndPoint.ToString();
+                        var socketIp = GetOriginIP();
 
                         String k = br.ReadString();
                         KnownHost kh = DeserializeXMLFileToObject<KnownHost>(k);
-
-                        int index = socketIp.IndexOf(":");
-                        if (index > 0)
-                            socketIp = socketIp.Substring(0, index);
 
                         kh.hostIP = socketIp;
                         kh.status = KnownHost.STATE_ONLINE;
@@ -164,6 +157,12 @@ namespace DuckServer
                     break;
                 case IM_GetIdentity:
                     
+                    break;
+                case IM_NewVersions:
+                    IMClient imc = new IMClient();
+                    imc.setConnParams(GetOriginIP(),25567);
+                    imc.SetupConn();
+                    imc.SendSignal(IM_NewVersions, Service.DoSerialize(new DateTimeVersions { ServiceVersion = sql.GetServices(), WhitelistVersion = sql.GetWhitelists(), ServiceDateTime = sql.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST), WhitelistDateTime = sql.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST) }));
                     break;
                 case IM_AddDatabases:
                     sql.AddDatabase(new DatabaseObject(br.ReadString(), br.ReadInt32()));
@@ -216,8 +215,25 @@ namespace DuckServer
             return br.ReadString();
         }
 
-        
 
+        public struct DateTimeVersions
+        {
+            public DateTime ServiceDateTime;
+            public DateTime WhitelistDateTime;
+            public List<ServicesObject> ServiceVersion;
+            public List<Whitelists> WhitelistVersion;
+        }
+
+        public String GetOriginIP()
+        {
+            var pi = netStream.GetType().GetProperty("Socket", BindingFlags.NonPublic | BindingFlags.Instance);
+            var socketIp = ((Socket)pi.GetValue(netStream, null)).RemoteEndPoint.ToString();
+            int index = socketIp.IndexOf(":");
+            if (index > 0)
+                socketIp = socketIp.Substring(0, index);
+
+            return socketIp;
+        }
         /*public List<ServicesObject> GetActiveServices()
         {
             MSSQL ms = new MSSQL();
@@ -289,6 +305,8 @@ namespace DuckServer
         public const byte IM_GetVersion = 32;
         public const byte IM_GetMAC = 33;
         public const byte IM_RegistrationDone = 34;
+        public const byte IM_NewVersionsCheck = 50;
+        public const byte IM_NewVersions = 51;
         public const byte IM_AddDatabases = 62;
         public const byte IM_GetDatabases = 63;
         public const byte IM_NewDatabases = 65;

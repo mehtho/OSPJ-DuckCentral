@@ -126,6 +126,7 @@ namespace DuckPond.Pages
 
             MSSQL ms = new MSSQL();
             ms.SetServices(clean);
+            ms.SetLastUpdated(DateTime.Now,MSSQL.GET_SERVICE_LIST);
         }
 
         private void BtnRemoveRow_Click(object sender, RoutedEventArgs e)

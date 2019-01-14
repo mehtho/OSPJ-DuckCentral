@@ -146,6 +146,8 @@ namespace DuckPond.Pages
                 if (ms.AddWhitelist(wl)==0)
                 {
                     //Set Success
+                    ms.SetLastUpdated(DateTime.Now, MSSQL.GET_WHITELIST_LIST);
+
                     VidAddOne.ClearValue(Border.BorderBrushProperty);
                     PidAddOne.ClearValue(Border.BorderBrushProperty);
                     SerialAddOne.ClearValue(Border.BorderBrushProperty);
