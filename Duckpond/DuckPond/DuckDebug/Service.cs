@@ -155,7 +155,7 @@ namespace DuckServer
             {
                 return GetIPAddressLike(serviceIP);
             }
-            catch(Exception e)
+            catch
             {
 
             }

@@ -42,5 +42,6 @@
         <Label Content="Serial Number:" HorizontalAlignment="Left" Margin="826,193,0,0" VerticalAlignment="Top" Width="102"/>
         <Label Content="Add Device List:" HorizontalAlignment="Left" Margin="826,304,0,0" VerticalAlignment="Top" Width="102"/>
         <Label x:Name="MsgAddOne" Content="" HorizontalAlignment="Left" Margin="908,265,0,0" VerticalAlignment="Top" Width="118"/>
+        <Button x:Name="BtnRemoveSelected"  Content="Remove Selected" HorizontalAlignment="Left" Margin="50,537,0,0" VerticalAlignment="Top" Width="100" Click="BtnRemoveSelected_Click"/>
     </Grid>
 </Page>

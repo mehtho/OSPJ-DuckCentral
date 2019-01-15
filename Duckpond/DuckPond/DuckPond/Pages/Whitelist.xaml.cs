@@ -176,5 +176,16 @@ namespace DuckPond.Pages
         {
             DoFilter();
         }
+
+        private void BtnRemoveSelected_Click(object sender, RoutedEventArgs e)
+        {
+            WLTableRow row = (WLTableRow)WhitelistTable.Items.GetItemAt(WhitelistTable.SelectedIndex);
+            MSSQL ms = new MSSQL();
+            Whitelists wl = new Whitelists();
+            wl.WhitelistID1 = row.WhitelistID;
+            ms.RemoveWhitelist(wl);
+            WhitelistTable.Items.Clear();
+            LoadTable();
+        }
     }
 }

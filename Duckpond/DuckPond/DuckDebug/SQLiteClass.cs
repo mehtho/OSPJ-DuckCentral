@@ -153,16 +153,11 @@ namespace DuckPond
         {
             using (SQLiteCommand cmd = new SQLiteCommand("DELETE FROM Services", m_dbConnection))
             {
-                Console.WriteLine("125");
                 cmd.ExecuteNonQuery();
-                Console.WriteLine("126");
                 foreach (ServicesObject sro in sros)
                 {
-                    Console.WriteLine("127");
                     AddService(sro);
-                    Console.WriteLine("128");
                 }
-                Console.WriteLine("129");
             }
         }
 
@@ -182,14 +177,11 @@ namespace DuckPond
         {
             using (SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Services (Ip, Port, Preference) values ($Ip, $Port, $Preference) ", m_dbConnection))
             {
-                Console.WriteLine("154");
                 cmd.Parameters.AddWithValue("$Ip", sro.IPAddress);
                 cmd.Parameters.AddWithValue("$Port", sro.port);
                 cmd.Parameters.AddWithValue("$Preference", sro.Preference);
                 cmd.Transaction = sqlt;
-                Console.WriteLine("160");
                 cmd.ExecuteNonQuery();
-                Console.WriteLine("162");
             }
         }
 

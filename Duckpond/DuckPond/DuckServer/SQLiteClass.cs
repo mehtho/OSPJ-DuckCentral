@@ -65,73 +65,96 @@ namespace DuckPond
         public string GetConnectionString(int Preference)
         {
             String sql = "SELECT * FROM BigDatabase WHERE Preference = " + Preference + ";";
-            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-
-            SQLiteDataReader reader = command.ExecuteReader();
-            while (reader.Read())
+           
+            using (SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection))
             {
-                return reader.GetString(0);
-            }
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        return reader.GetString(0);
+                    }
 
-            return "";
+                    return "";
+                }
+            }
         }
 
         public List<DatabaseObject> GetConnections()
         {
             String sql = "SELECT * FROM BigDatabase";
-            SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection);
-
-            SQLiteDataReader reader = command.ExecuteReader();
-
-            List<DatabaseObject> dbs = new List<DatabaseObject>();
-
-            while (reader.Read())
+            using (SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection))
             {
-                dbs.Add(new DatabaseObject(reader.GetString(0),reader.GetInt32(1)));
-            }
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    List<DatabaseObject> dbs = new List<DatabaseObject>();
 
-            return dbs;
+                    while (reader.Read())
+                    {
+                        dbs.Add(new DatabaseObject(reader.GetString(0), reader.GetInt32(1)));
+                    }
+
+                    return dbs;
+                }
+            }
         }
 
         public void SetDatabase(DatabaseObject dtb)
         {
-            SQLiteCommand cmd = new SQLiteCommand("UPDATE BigDatabase " +
+            using (SQLiteCommand cmd = new SQLiteCommand("UPDATE BigDatabase " +
                 "SET ConnectionString = $connectionstring " +
-                "WHERE Preference = $preference", m_dbConnection);
+                "WHERE Preference = $preference", m_dbConnection))
+            {
+                cmd.Parameters.AddWithValue("$connectionString", dtb.ConnectionString);
+                cmd.Parameters.AddWithValue("$preference", dtb.Preference);
 
-            cmd.Parameters.AddWithValue("$connectionString", dtb.ConnectionString);
-            cmd.Parameters.AddWithValue("$preference", dtb.Preference);
-            
-            cmd.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public void AddDatabase(DatabaseObject dtb)
         {
-            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO BigDatabase " +
-                "(ConnectionString, Preference) values ($connectionString, $preference) ", m_dbConnection);
+            using (SQLiteCommand cmd = new SQLiteCommand("INSERT INTO BigDatabase " +
+                "(ConnectionString, Preference) values ($connectionString, $preference) ", m_dbConnection))
+            {
+                cmd.Parameters.AddWithValue("$connectionString", dtb.ConnectionString);
+                cmd.Parameters.AddWithValue("$preference", dtb.Preference);
 
-            cmd.Parameters.AddWithValue("$connectionString", dtb.ConnectionString);
-            cmd.Parameters.AddWithValue("$preference", dtb.Preference);
+                cmd.ExecuteNonQuery();
+            }
+        }
 
-            cmd.ExecuteNonQuery();
+        public void AddDatabase(DatabaseObject dtb, SQLiteTransaction tr)
+        {
+            using (SQLiteCommand cmd = new SQLiteCommand("INSERT INTO BigDatabase " +
+                "(ConnectionString, Preference) values ($connectionString, $preference) ", m_dbConnection))
+            {
+                cmd.Transaction = tr;
+                cmd.Parameters.AddWithValue("$connectionString", dtb.ConnectionString);
+                cmd.Parameters.AddWithValue("$preference", dtb.Preference);
+
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public DatabaseObject GetDatabase(int pref)
         {
-            SQLiteCommand cmd = new SQLiteCommand("SELECT * FROM BigDatabase " +
-                "WHERE Preference = $preference", m_dbConnection);
-
-            cmd.Parameters.AddWithValue("$preference", pref);
-            SQLiteDataReader reader = cmd.ExecuteReader();
-
-            DatabaseObject dtb = new DatabaseObject();
-            while (reader.Read())
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT * FROM BigDatabase " +
+                "WHERE Preference = $preference", m_dbConnection))
             {
-                dtb.ConnectionString = reader["ConnectionString"].ToString();
-                dtb.Preference = Convert.ToInt32(reader["Preference"].ToString());
-            }
+                cmd.Parameters.AddWithValue("$preference", pref);
+                using (SQLiteDataReader reader = cmd.ExecuteReader())
+                {
+                    DatabaseObject dtb = new DatabaseObject();
+                    while (reader.Read())
+                    {
+                        dtb.ConnectionString = reader["ConnectionString"].ToString();
+                        dtb.Preference = Convert.ToInt32(reader["Preference"].ToString());
+                    }
 
-            return dtb;
+                    return dtb;
+                }
+            }
         }
 
         public void NewConnections(List<DatabaseObject> dbos)
@@ -143,7 +166,7 @@ namespace DuckPond
 
                 foreach (DatabaseObject dbo in dbos)
                 {
-                    this.AddDatabase(dbo);
+                    this.AddDatabase(dbo, tr);
                 }
                 tr.Commit();
             }
@@ -166,29 +189,33 @@ namespace DuckPond
 
         public void AddService(ServicesObject sro)
         {
-            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Services " +
-                "(Ip, Port, Preference) values ($Ip, $Port, $Preference) ", m_dbConnection);
+            using (SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Services " +
+                "(Ip, Port, Preference) values ($Ip, $Port, $Preference) ", m_dbConnection))
+            {
+                cmd.Parameters.AddWithValue("$Ip", sro.IPAddress);
+                cmd.Parameters.AddWithValue("$Port", sro.port);
+                cmd.Parameters.AddWithValue("$Preference", sro.Preference);
 
-            cmd.Parameters.AddWithValue("$Ip", sro.IPAddress);
-            cmd.Parameters.AddWithValue("$Port", sro.port);
-            cmd.Parameters.AddWithValue("$Preference",sro.Preference);
-
-            cmd.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public List<ServicesObject> GetServices()
         {
             List<ServicesObject> sros = new List<ServicesObject>();
-            SQLiteCommand cmd = new SQLiteCommand("SELECT * From Services", m_dbConnection);
-            var reader = cmd.ExecuteReader();
-
-            while (reader.Read())
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT * From Services", m_dbConnection))
             {
-                ServicesObject sro = new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]);
-                sros.Add(sro);
-            }
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        ServicesObject sro = new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]);
+                        sros.Add(sro);
+                    }
 
-            return sros;
+                    return sros; 
+                }
+            }
         }
 
         public void NewWhitelists(List<Whitelists> wls)
@@ -200,39 +227,59 @@ namespace DuckPond
 
                 foreach (Whitelists wl in wls)
                 {
-                    this.AddWhitelist(wl);
+                    this.AddWhitelist(wl, tr);
                 }
                 tr.Commit();
             }
         }
 
+        public void AddWhitelist(Whitelists wl, SQLiteTransaction tr)
+        {
+            using (SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Whitelists " +
+             "(PID, VID, Serial, WhitelistID, DateTime) values ($PID, $VID, $Serial, $WhitelistID, $DateTime) ", m_dbConnection))
+            {
+                cmd.Transaction = tr;
+                cmd.Parameters.AddWithValue("$PID", wl.Pid1);
+                cmd.Parameters.AddWithValue("$VID", wl.Vid1);
+                cmd.Parameters.AddWithValue("$Serial", wl.SerialNumber1);
+                cmd.Parameters.AddWithValue("$WhitelistID", wl.WhitelistID1);
+                cmd.Parameters.AddWithValue("$DateTime", wl.Datetime1);
+
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         public void AddWhitelist(Whitelists wl)
         {
-            SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Whitelists " +
-             "(PID, VID, Serial, WhitelistID, DateTime) values ($PID, $VID, $Serial, $WhitelistID, $DateTime) ", m_dbConnection);
+            using (SQLiteCommand cmd = new SQLiteCommand("INSERT INTO Whitelists " +
+             "(PID, VID, Serial, WhitelistID, DateTime) values ($PID, $VID, $Serial, $WhitelistID, $DateTime) ", m_dbConnection))
+            {
+                cmd.Parameters.AddWithValue("$PID", wl.Pid1);
+                cmd.Parameters.AddWithValue("$VID", wl.Vid1);
+                cmd.Parameters.AddWithValue("$Serial", wl.SerialNumber1);
+                cmd.Parameters.AddWithValue("$WhitelistID", wl.WhitelistID1);
+                cmd.Parameters.AddWithValue("$DateTime", wl.Datetime1);
 
-            cmd.Parameters.AddWithValue("$PID", wl.Pid1);
-            cmd.Parameters.AddWithValue("$VID", wl.Vid1);
-            cmd.Parameters.AddWithValue("$Serial", wl.SerialNumber1);
-            cmd.Parameters.AddWithValue("$WhitelistID", wl.WhitelistID1);
-            cmd.Parameters.AddWithValue("$DateTime", wl.Datetime1);
-
-            cmd.ExecuteNonQuery();
+                cmd.ExecuteNonQuery();
+            }
         }
 
         public List<Whitelists> GetWhitelists()
         {
             List<Whitelists> wls = new List<Whitelists>();
-            SQLiteCommand cmd = new SQLiteCommand("SELECT * From Whitelists", m_dbConnection);
-            var reader = cmd.ExecuteReader();
-
-            while (reader.Read())
+            using (SQLiteCommand cmd = new SQLiteCommand("SELECT * From Whitelists", m_dbConnection))
             {
-                Whitelists wl = new Whitelists(DateTime.Parse(reader["DateTime"].ToString(), System.Globalization.CultureInfo.InvariantCulture), reader["Vid"].ToString(), reader["Pid"].ToString(), reader["Serial"].ToString(), (int)reader["WhitelistID"]);
-                wls.Add(wl);
-            }
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Whitelists wl = new Whitelists(DateTime.Parse(reader["DateTime"].ToString(), System.Globalization.CultureInfo.InvariantCulture), reader["Vid"].ToString(), reader["Pid"].ToString(), reader["Serial"].ToString(), (int)reader["WhitelistID"]);
+                        wls.Add(wl);
+                    }
 
-            return wls;
+                    return wls;
+                }
+            }
         }
 
         public DateTime GetLastUpdated(byte b)
@@ -250,23 +297,27 @@ namespace DuckPond
             {
                 return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
             }
-            SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection);
-            SQLiteDataReader reader = sql.ExecuteReader();
-
-            while (reader.Read())
+            
+            using (SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection))
             {
-                try
+                using (SQLiteDataReader reader = sql.ExecuteReader())
                 {
-                    return DateTime.Parse(reader["DateTime"].ToString(), System.Globalization.CultureInfo.InvariantCulture);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    Console.WriteLine(e.Source);
-                    Console.WriteLine(e.StackTrace);
+                    while (reader.Read())
+                    {
+                        try
+                        {
+                            return DateTime.Parse(reader["DateTime"].ToString(), System.Globalization.CultureInfo.InvariantCulture);
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e.Message);
+                            Console.WriteLine(e.Source);
+                            Console.WriteLine(e.StackTrace);
+                        }
+                    }
+                    return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
                 }
             }
-            return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         public void SetLastUpdated(byte b, DateTime dt)
@@ -284,9 +335,11 @@ namespace DuckPond
             {
                 return;
             }
-            SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection);
-            sql.Parameters.AddWithValue("$dt", dt);
-            sql.ExecuteNonQuery();
+            using (SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection))
+            {
+                sql.Parameters.AddWithValue("$dt", dt);
+                sql.ExecuteNonQuery();
+            }
         }
 
         public const byte GET_SERVICE_LIST = 0;

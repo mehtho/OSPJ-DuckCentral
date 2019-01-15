@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace DuckPond.Models
 {
-    [Serializable] class Events
+    [Serializable]
+    public class Events
     {
         public String eventCode;
         public String eventMessage;
@@ -15,7 +16,7 @@ namespace DuckPond.Models
         public String eventGUID;
         public DateTime eventDate;
 
-        public Events(String eCode, String eMessage, int eLevel, String eIP, String eGUID, DateTime eDate, String eComment)
+        public Events(String eCode, String eMessage, int eLevel, String eIP, String eGUID, DateTime eDate)
         {
             this.eventCode = eCode;
             this.eventMessage = eMessage;
@@ -25,5 +26,9 @@ namespace DuckPond.Models
             this.eventDate = eDate;
         }
 
+        public Events()
+        {
+
+        }
     }
 }

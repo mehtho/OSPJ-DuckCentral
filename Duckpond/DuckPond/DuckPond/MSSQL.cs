@@ -100,22 +100,21 @@ namespace DuckPond
             cmd.CommandType = CommandType.Text;
             cmd.Connection = cnn;
 
-            reader = cmd.ExecuteReader();
-
-            while (reader.Read())
+            using (reader = cmd.ExecuteReader())
             {
-                Whitelists wl = new Whitelists(
-                    (DateTime)reader["Datetime"],
-                    reader["Vid"].ToString(),
-                    reader["Pid"].ToString(),
-                    reader["Serial"].ToString(),
-                    (int)reader["WhitelistID"]);
+                while (reader.Read())
+                {
+                    Whitelists wl = new Whitelists(
+                        (DateTime)reader["Datetime"],
+                        reader["Vid"].ToString(),
+                        reader["Pid"].ToString(),
+                        reader["Serial"].ToString(),
+                        (int)reader["WhitelistID"]);
 
-                wls.Add(wl);
+                    wls.Add(wl);
+                }
+                return wls;
             }
-
-            cnn.Close();
-            return wls;
         }
 
         public byte AddWhitelist(Whitelists wl)
@@ -169,18 +168,19 @@ namespace DuckPond
 
             comm.Parameters.Add(serialParam);
 
-            var results = comm.ExecuteReader();
-
-            while (results.Read())
+            using (var results = comm.ExecuteReader())
             {
-                if (results["serial"].ToString().Equals(wl.SerialNumber1))
+                while (results.Read())
                 {
-                    cnn.Close();
-                    return true;
+                    if (results["serial"].ToString().Equals(wl.SerialNumber1))
+                    {
+                        cnn.Close();
+                        return true;
+                    }
                 }
+                cnn.Close();
+                return false;
             }
-            cnn.Close();
-            return false;
         }
 
         public List<Whitelists> FilteredWhitelists(String pid, String vid, String srl, DateTime dt1, DateTime dt2)
@@ -229,21 +229,35 @@ namespace DuckPond
             dtt2.Value = dt2;
             cmd.Parameters.Add(dtt2);
 
-            reader = cmd.ExecuteReader();
-            while (reader.Read())
+            using (reader = cmd.ExecuteReader())
             {
-                Whitelists wl = new Whitelists(
-                    (DateTime)reader["datetime"],
-                    reader["Vid"].ToString(),
-                    reader["Pid"].ToString(),
-                    reader["Serial"].ToString(),
-                    (int)reader["WhitelistID"]);
+                while (reader.Read())
+                {
+                    Whitelists wl = new Whitelists(
+                        (DateTime)reader["datetime"],
+                        reader["Vid"].ToString(),
+                        reader["Pid"].ToString(),
+                        reader["Serial"].ToString(),
+                        (int)reader["WhitelistID"]);
 
-                wls.Add(wl);
+                    wls.Add(wl);
+                }
+
+                cnn.Close();
+                return wls;
             }
+        }
 
-            cnn.Close();
-            return wls;
+        public void RemoveWhitelist(Whitelists s)
+        {
+            if (OpenCon())
+            {
+                using (SqlCommand sql = new SqlCommand("DELETE FROM dbo.Whitelist WHERE WhitelistID=@wid", cnn))
+                {
+                    sql.Parameters.AddWithValue("wid", s.WhitelistID1);
+                    sql.ExecuteNonQuery();
+                }
+            }
         }
 
         //Event Methods
@@ -261,24 +275,25 @@ namespace DuckPond
             {
                 return new List<Events>();
             }
-            reader = cmd.ExecuteReader();
 
-            while (reader.Read())
+            using (reader = cmd.ExecuteReader())
             {
-                Events ev = new Events(
+                while (reader.Read())
+                {
+                    Events ev = new Events(
 
-                    reader["code"].ToString(),
-                    reader["message"].ToString(),
-                    (int)reader["severity"],
-                    reader["IP"].ToString(),
-                    reader["GUID"].ToString(),
-                    (DateTime)reader["date"],
-                    reader["comment"].ToString());
+                        reader["code"].ToString(),
+                        reader["message"].ToString(),
+                        (int)reader["severity"],
+                        reader["IP"].ToString(),
+                        reader["GUID"].ToString(),
+                        (DateTime)reader["date"]);
 
-                evs.Add(ev);
+                    evs.Add(ev);
+                }
+
+                return evs;
             }
-
-            return evs;
         }
 
         public List<Events> FilteredEvents(String code, String message, int[] severity, String ip, String guid, DateTime date1, DateTime date2)
@@ -352,25 +367,26 @@ namespace DuckPond
             {
                 return new List<Events>();
             }
-            reader = cmd.ExecuteReader();
 
-            while (reader.Read())
+            using (reader = cmd.ExecuteReader())
             {
-                Events ev = new Events(
+                while (reader.Read())
+                {
+                    Events ev = new Events(
 
-                    reader["code"].ToString(),
-                    reader["message"].ToString(),
-                    (int)reader["severity"],
-                    reader["IP"].ToString(),
-                    reader["GUID"].ToString(),
-                    (DateTime)reader["date"],
-                    reader["comment"].ToString());
+                        reader["code"].ToString(),
+                        reader["message"].ToString(),
+                        (int)reader["severity"],
+                        reader["IP"].ToString(),
+                        reader["GUID"].ToString(),
+                        (DateTime)reader["date"]);
 
 
-                evs.Add(ev);
+                    evs.Add(ev);
+                }
+                cnn.Close();
+                return evs;
             }
-            cnn.Close();
-            return evs;
         }
         //Known Host Methods
         public List<KnownHost> GetKnownHosts()
@@ -389,22 +405,23 @@ namespace DuckPond
                 {
                     return new List<KnownHost>();
                 }
-                reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                using (reader = cmd.ExecuteReader())
                 {
-                    KnownHost kh = new KnownHost(
-                        reader["MAC"].ToString(),
-                        reader["IP"].ToString(),
-                        reader["Version"].ToString(),
-                        (DateTime)reader["DateAdded"],
-                        reader["GUID"].ToString()
-                        );
-                    khs.Add(kh);
-                }
+                    while (reader.Read())
+                    {
+                        KnownHost kh = new KnownHost(
+                            reader["MAC"].ToString(),
+                            reader["IP"].ToString(),
+                            reader["Version"].ToString(),
+                            (DateTime)reader["DateAdded"],
+                            reader["GUID"].ToString()
+                            );
+                        khs.Add(kh);
+                    }
 
-                CloseCon();
-                return khs;
+                    CloseCon();
+                    return khs;
+                }
             }
             catch(Exception e)
             {
@@ -443,17 +460,18 @@ namespace DuckPond
 
             comm.Parameters.Add(serialParam);
 
-            var results = comm.ExecuteReader();
-
-            while (results.Read())
+            using (var results = comm.ExecuteReader())
             {
-                if (results["guid"].ToString().Equals(kh.GUID))
+                while (results.Read())
                 {
-                    cnn.Close();
-                    return true;
+                    if (results["guid"].ToString().Equals(kh.GUID))
+                    {
+                        cnn.Close();
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         }
 
         public bool ClearHosts()
@@ -502,7 +520,6 @@ namespace DuckPond
                         Console.WriteLine(e.Source);
                         Console.WriteLine(e.Message);
                         Console.WriteLine(e.StackTrace);
-                        tr.Rollback();
                     }
                 }
             }
@@ -522,14 +539,15 @@ namespace DuckPond
             {
                 return new List<String>();
             }
-            reader = cmd.ExecuteReader();
-
-            while (reader.Read())
+            using (reader = cmd.ExecuteReader())
             {
-                ips.Add(reader["IPAddress"].ToString());
-            }
+                while (reader.Read())
+                {
+                    ips.Add(reader["IPAddress"].ToString());
+                }
 
-            return ips;
+                return ips;
+            }
         }
 
         //Service Methods
@@ -547,15 +565,15 @@ namespace DuckPond
             {
                 return sos;
             }
-            reader = cmd.ExecuteReader();
-
-            while (reader.Read())
+            using (reader = cmd.ExecuteReader())
             {
-                sos.Add(new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]));
-            }
+                while (reader.Read())
+                {
+                    sos.Add(new ServicesObject(reader["IP"].ToString(), (int)reader["Port"], (int)reader["Preference"]));
+                }
 
-            CloseCon();
-            return sos;
+                return sos;
+            }
         }
 
         public void AddService(ServicesObject so, SqlTransaction sqlt)
@@ -615,21 +633,20 @@ namespace DuckPond
                     return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
                 }
                 SqlCommand cmd = new SqlCommand();
-                SqlDataReader reader;
-
                 cmd.CommandText = "SELECT LastUpdated FROM dbo.LastUpdated WHERE What ='@wt'";
                 cmd.Parameters.AddWithValue("wt", s);
                 cmd.CommandType = CommandType.Text;
                 cmd.Connection = cnn;
 
-                reader = cmd.ExecuteReader();
-
-                while (reader.Read())
+                using (SqlDataReader reader = cmd.ExecuteReader())
                 {
-                    return (DateTime)reader["LastUpdated"];
+                    while (reader.Read())
+                    {
+                        return (DateTime)reader["LastUpdated"];
+                    }
+
+                    return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
                 }
-                CloseCon();
-                return DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture);
             }
         }
 
