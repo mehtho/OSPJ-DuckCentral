@@ -123,6 +123,9 @@ namespace DuckServer
                     var s = MACFinder.getMacByIp(GetIPAddress());
                     bw.Write(s);
                     break;
+                case IM_GetHostname:
+                    bw.Write(Dns.GetHostName());
+                    break;
                 case IM_RegistrationDone:
                     if (br.ReadString().Equals(sql.GetGUID()))
                     {
@@ -233,6 +236,7 @@ namespace DuckServer
         public const byte IM_GetVersion = 32;
         public const byte IM_GetMAC = 33;
         public const byte IM_RegistrationDone = 34;
+        public const byte IM_GetHostname = 35;
         public const byte IM_NewVersionsCheck = 50;
         public const byte IM_NewVersions = 51;
         public const byte IM_AddDatabases = 62;

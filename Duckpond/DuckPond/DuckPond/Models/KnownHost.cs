@@ -10,11 +10,6 @@ namespace DuckPond.Models
     [Serializable]
     public class KnownHost
     {
-        public KnownHost()
-        {
-
-        }
-
         public string hostMAC;
 
         public string hostIP;
@@ -27,7 +22,14 @@ namespace DuckPond.Models
 
         public string GUID;
 
-        public KnownHost(string hMAC, string hIP, string hVer, byte hStat, DateTime dAdded, String gUID)
+        public string hostname;
+
+        public KnownHost()
+        {
+
+        }
+
+        public KnownHost(string hMAC, string hIP, string hVer, byte hStat, DateTime dAdded, String gUID, String hostname)
         {
             this.hostMAC = hMAC;
             this.hostIP = hIP;
@@ -35,9 +37,10 @@ namespace DuckPond.Models
             this.status = hStat;
             this.dateAdded = dAdded;
             this.GUID = gUID;
+            this.hostname = hostname;
         }
 
-        public KnownHost(string hMAC, string hIP, string hVer, DateTime dAdded, String gUID)
+        public KnownHost(string hMAC, string hIP, string hVer, DateTime dAdded, String gUID, String hostname)
         {
             this.hostMAC = hMAC;
             this.hostIP = hIP;
@@ -45,6 +48,7 @@ namespace DuckPond.Models
             this.dateAdded = dAdded;
             this.GUID = gUID;
             this.status = STATE_UNKNOWN;
+            this.hostname = hostname;
         }
 
         public static String ByteToString(byte b)
@@ -57,7 +61,7 @@ namespace DuckPond.Models
             {
                 return "ONLINE";
             }
-            else if(b == STATE_OFFLINE)
+            else if (b == STATE_OFFLINE)
             {
                 return "Offline";
             }
@@ -82,7 +86,7 @@ namespace DuckPond.Models
         }
 
         public const Byte STATE_UNKNOWN = 0;
-        public const Byte STATE_OFFLINE = 1;
-        public const Byte STATE_ONLINE = 2;
+        public const Byte STATE_ONLINE = 1;
+        public const Byte STATE_OFFLINE = 2;
     }
 }

@@ -110,50 +110,31 @@ namespace DuckServer
             SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckClient\\information.dat");
             List<ServicesObject> sros = sql.GetServices();
 
-            String serviceIP = "";
-            if (sros.Count == 0)
+            using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\DuckClient\Address", true))
             {
-                using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\DuckClient\Address", true))
+                if (key != null)
                 {
-                    if (key != null)
+                    Object o = key.GetValue("PrefIP");
+                    if (o != null)
                     {
-                        Object o = key.GetValue("PrefIP");
-                        if (o != null)
-                        {
-                            return o.ToString();
-                        }
-                        else
-                        {
-                            Console.WriteLine("Registry entry was null");
-                        }
+                        return o.ToString();
                     }
                     else
                     {
-                        WriteKey("127.0.0.1");
+                        Console.WriteLine("Registry entry was null");
                     }
                 }
-            }
-            //DELEGATE SERVICE IPS LATER
-            foreach(ServicesObject sro in sros)
-            {
-                IMClient imc = new IMClient();
-                serviceIP = sro.IPAddress;
-                try
+                else
                 {
-                    imc.setConnParams(sro.IPAddress, sro.port);
-                    imc.SetupConn();
-                    imc.Disconnect();
-                    serviceIP = sro.IPAddress;
-                    break;
+                    WriteKey("127.0.0.1");
                 }
-                catch
-                {
+            }
 
-                }
-            }
+            ServicesObject inUse =  ServiceConnectionDelegator.GetService();
+            Console.WriteLine(inUse);
             try
             {
-                return GetIPAddressLike(serviceIP);
+                return GetIPAddressLike(inUse.IPAddress);
             }
             catch
             {
@@ -166,14 +147,16 @@ namespace DuckServer
 
         public static string GetIPAddressLike(String target)
         {
+            Console.WriteLine(target);
             IPHostEntry Host = default(IPHostEntry);
-            string Hostname = System.Environment.MachineName;
+            string Hostname = Environment.MachineName;
             Host = Dns.GetHostEntry(Hostname);
             IPAddress targetIPA = IPAddress.Parse(target.Trim());
             String IPAddresss = "";
             int best = 0;
             foreach (IPAddress IP in Host.AddressList)
             {
+                Console.WriteLine(IP);
                 if (IP.AddressFamily == AddressFamily.InterNetwork)
                 {
                     int matches = 0;

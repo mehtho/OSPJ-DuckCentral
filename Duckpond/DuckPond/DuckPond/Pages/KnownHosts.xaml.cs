@@ -38,6 +38,7 @@ namespace DuckPond.Pages
             ColMac.Binding = new Binding("MAC");
             ColVersion.Binding = new Binding("Version");
             ColStatus.Binding = new Binding("Status");
+            ColHostname.Binding = new Binding("Hostname");
 
             KnownHostTable.CanUserAddRows = false;
 
@@ -72,13 +73,14 @@ namespace DuckPond.Pages
             public String MAC { set; get; }
             public String Version { set; get; }
             public String Status { set; get; }
+            public String Hostname { set; get; }
         }
 
         private static List<GUIDMACVersionIP> GetActiveHosts()
         {
             MSSQL ms = new MSSQL();
             List<String> ips = ms.GetIPs();
-            count = ips.Count();
+            int max = ips.Count;
             List <GUIDMACVersionIP> gmvis = new List<GUIDMACVersionIP>();
 
             IPPS = new List<IPPlusStatus>();
@@ -96,18 +98,14 @@ namespace DuckPond.Pages
                 th.Join();
             }
 
-            if (count != 0)
-            {
-                Console.WriteLine("Testing waiting");
-                Thread.Sleep(500);
-            }
-
             //The response of every ping
-            foreach (IPPlusStatus iss in IPPS)
+            for(int i=0;i<=count; i++)
             {
-                if (iss.Status == KnownHost.STATE_ONLINE)
+                try
                 {
-                    try
+                    IPPlusStatus iss = IPPS[i];
+
+                    if (iss.Status == KnownHost.STATE_ONLINE)
                     {
                         IMClient iMC = new IMClient();
                         iMC.setConnParams(iss.IP, 25567);
@@ -122,20 +120,25 @@ namespace DuckPond.Pages
                         iMC.SetupConn();
 
                         string mac = iMC.RequestParam(IMClient.IM_GetMAC);
+                        iMC.CloseConn();
+                        iMC.SetupConn();
+
+                        string hostname = iMC.RequestParam(IMClient.IM_GetHostname);
 
                         GUIDMACVersionIP gmvi = new GUIDMACVersionIP
                         {
                             GUID = guid,
                             IP = iss.IP,
                             MAC = mac,
-                            Version = version
+                            Version = version,
+                            Hostname = hostname
                         };
                         gmvis.Add(gmvi);
                     }
-                    catch (Exception)
-                    {
+                }
+                catch (Exception)
+                {
 
-                    }
                 }
             }
             return gmvis;
@@ -147,6 +150,7 @@ namespace DuckPond.Pages
             public String MAC;
             public String Version;
             public String IP;
+            public String Hostname;
         }
 
         private void LoadTable()
@@ -165,14 +169,14 @@ namespace DuckPond.Pages
                 {
                     if (kh.GUID.Trim().Equals(gmvi.GUID.Trim()))
                     {
-                        khrs.Add(new KHTableRow { GUID = kh.GUID, DateAdded = kh.dateAdded.ToString(), IP = gmvi.IP, MAC = gmvi.MAC, Status = KnownHost.ByteToString(KnownHost.STATE_ONLINE), Version = gmvi.Version });
+                        khrs.Add(new KHTableRow { GUID = kh.GUID, DateAdded = kh.dateAdded.ToString(), IP = gmvi.IP, MAC = gmvi.MAC, Status = KnownHost.ByteToString(KnownHost.STATE_ONLINE), Version = gmvi.Version, Hostname=gmvi.Hostname });
                         found = true;
                         break;
                     }
                 }
                 if (!found)
                 {
-                    khrs.Add(new KHTableRow { GUID = kh.GUID, DateAdded = kh.dateAdded.ToString(), IP = kh.hostIP, MAC = kh.hostMAC, Status = KnownHost.ByteToString(kh.status), Version = kh.version });
+                    khrs.Add(new KHTableRow { GUID = kh.GUID, DateAdded = kh.dateAdded.ToString(), IP = kh.hostIP, MAC = kh.hostMAC, Status = KnownHost.ByteToString(kh.status), Version = kh.version, Hostname=kh.hostname });
                 }
             }
             KnownHostTable.ItemsSource = khrs;

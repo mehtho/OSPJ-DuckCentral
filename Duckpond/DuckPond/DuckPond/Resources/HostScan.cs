@@ -34,29 +34,30 @@ namespace DuckPond.Resources
         public static void run(String host, int port)
         {
             List<int> toRet = new List<int>();
-            TcpClient tcp = new TcpClient();
             try
             {
-                var client = new TcpClient();
-                var result = client.BeginConnect(host.Trim(), port, null, null);
-
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(4));
-
-                if (!success)
+                using (TcpClient client = new TcpClient())
                 {
-                    KnownHosts.IPPS.Add(new IPPlusStatus { IP = host, Status = KnownHost.STATE_UNKNOWN });
-                }
-                else
-                {
-                    KnownHosts.IPPS.Add(new IPPlusStatus { IP = host, Status = KnownHost.STATE_ONLINE });
-                    KnownHosts.count--;
-                    tcp.Close();
-                    return;
+                    var result = client.BeginConnect(host.Trim(), port, null, null);
+
+                    var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(2));
+
+                    if (!success)
+                    {
+                        KnownHosts.IPPS.Add(new IPPlusStatus { IP = host, Status = KnownHost.STATE_UNKNOWN });
+                        KnownHosts.count++;
+                    }
+                    else
+                    {
+                        KnownHosts.IPPS.Add(new IPPlusStatus { IP = host, Status = KnownHost.STATE_ONLINE });
+                        KnownHosts.count++;
+                        return;
+                    }
                 }
             }
             catch (Exception)
             {
-
+                KnownHosts.count++;
             }
         }
     }

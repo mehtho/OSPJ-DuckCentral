@@ -31,12 +31,11 @@ namespace DuckPond.Pages
         public Databases()
         {
             InitializeComponent();
-
+            LoginFailText.Content = "Enter password to view database connection strings";
             ColPref.Binding = new Binding("Preference");
             ColConn.Binding = new Binding("ConnectionString");
 
             DatabaseTable.CanUserAddRows = false;
-            LoadTable();
         }
 
         public struct DBTableRow
@@ -55,6 +54,7 @@ namespace DuckPond.Pages
 
         private void LoadTable()
         {
+            DatabaseTable.Visibility = Visibility.Visible;
             SQLiteClass sql = new SQLiteClass();
             List<DatabaseObject> dbos = sql.GetConnections();
             dtrs = new List<DBTableRow>();
@@ -159,6 +159,31 @@ namespace DuckPond.Pages
                     xsSubmit.Serialize(writer, o);
                     xml = sww.ToString(); // Your XML
                     return xml;
+                }
+            }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            string Username = UsernameField.Text.Trim();
+            string Password = PasswordField.Password;
+            if (Username.Length > 0 && Password.Length > 0)
+            {
+                if (DuckPassword.DoLogin(Username, Password))
+                {
+                    DatabaseTable.Visibility = Visibility.Visible;
+                    LoadTable();
+                    FrameBeforeTable.Visibility = Visibility.Hidden;
+                    LoginFailText.Visibility = Visibility.Hidden;
+                    LoginButton.Visibility = Visibility.Hidden;
+                    UsernameField.Visibility = Visibility.Hidden;
+                    PasswordField.Visibility = Visibility.Hidden;
+                    PasswordText.Visibility = Visibility.Hidden;
+                    UsernameText.Visibility = Visibility.Hidden;
+                }
+                else
+                {
+                    this.LoginFailText.Content = "Invalid Login Details, Try Again";
                 }
             }
         }

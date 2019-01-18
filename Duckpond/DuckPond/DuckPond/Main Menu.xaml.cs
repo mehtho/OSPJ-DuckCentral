@@ -21,54 +21,77 @@ namespace DuckPond
     /// </summary>
     public partial class Main_Menu : Page
     {
+        private List<Button> sidebuttons;
         public Main_Menu()
         {
+            sidebuttons = new List<Button>();
             InitializeComponent();
+            sidebuttons.Add(BtnAlerts);
+            sidebuttons.Add(BtnBackups);
+            sidebuttons.Add(BtnDatabases);
+            sidebuttons.Add(BtnDeployment);
+            sidebuttons.Add(BtnKnownHosts);
+            sidebuttons.Add(BtnServices);
+            sidebuttons.Add(BtnWhitelists);
+            sidebuttons.Add(BtnSettings);
         }
 
         private void BtnWhitelists_Click(object sender, RoutedEventArgs e)
         {
+            HighlightButtons(BtnWhitelists);
             Content_Frame.Navigate(new Whitelist());
         }
 
         private void BtnSettings_Click(object sender, RoutedEventArgs e)
         {
+            HighlightButtons(BtnSettings);
             Content_Frame.Navigate(new Settings());
         }
 
         private void BtnDeployment_Click(object sender, RoutedEventArgs e)
         {
+            HighlightButtons(BtnDeployment);
             Content_Frame.Navigate(new Deployment());
         }
 
         private void BtnAlerts_Click(object sender, RoutedEventArgs e)
         {
+            HighlightButtons(BtnAlerts);
             Content_Frame.Navigate(new Alerts());
         }
 
         private void BtnBackups_Click(object sender, RoutedEventArgs e)
         {
+            HighlightButtons(BtnBackups);
             Content_Frame.Navigate(new Backup());
-        }
-
-        private void BtnLookup_Click(object sender, RoutedEventArgs e)
-        {
-            Content_Frame.Navigate(new Lookup());
         }
 
         private void BtnDatabases_Click(object sender, RoutedEventArgs e)
         {
+            HighlightButtons(BtnDatabases);
             Content_Frame.Navigate(new Databases());
         }
 
         private void BtnService_Click(object sender, RoutedEventArgs e)
         {
+            HighlightButtons(BtnServices);
             Content_Frame.Navigate(new Services());
         }
 
         private void BtnKnownHosts_Click(object sender, RoutedEventArgs e)
         {
+            HighlightButtons(BtnKnownHosts);
             Content_Frame.Navigate(new KnownHosts());
+        }
+
+        private void HighlightButtons(Button pushed)
+        {
+            BrushConverter bc = new BrushConverter();
+            foreach(Button b in sidebuttons)
+            {
+                b.Background = (Brush)bc.ConvertFrom("#FFFFDB58");
+            }
+            pushed.Background = Brushes.Orange;
         }
     }
 }

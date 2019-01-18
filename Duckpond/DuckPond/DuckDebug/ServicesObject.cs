@@ -26,5 +26,9 @@ namespace DuckPond.Models
         public int port;
 
         public int Preference;
+
+        public const byte STATUS_UNKNOWN = 0;
+        public const byte STATUS_ONLINE = 1;
+        public const byte STATUS_OFFLINE = 2;
     }
 }

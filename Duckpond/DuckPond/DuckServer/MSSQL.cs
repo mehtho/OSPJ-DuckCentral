@@ -289,7 +289,8 @@ namespace DuckPond
                         reader["IP"].ToString(),
                         reader["Version"].ToString(),
                         (DateTime)reader["DateAdded"],
-                        reader["GUID"].ToString()
+                        reader["GUID"].ToString(),
+                        reader["Hostname"].ToString()
                         );
                 }
                 return khs;
@@ -306,13 +307,14 @@ namespace DuckPond
                 }
                 else
                 {
-                    SqlCommand comm = new SqlCommand("INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID) Values (@m, @i, @v, @da, @g)", cnn);
+                    SqlCommand comm = new SqlCommand("INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID, Hostname) Values (@m, @i, @v, @da, @g, @h)", cnn);
 
                     comm.Parameters.AddWithValue("m", kh.hostMAC);
                     comm.Parameters.AddWithValue("i", kh.hostIP.Trim());
                     comm.Parameters.AddWithValue("v", kh.version.Trim());
                     comm.Parameters.AddWithValue("da", kh.dateAdded);
                     comm.Parameters.AddWithValue("g", kh.GUID.Trim());
+                    comm.Parameters.AddWithValue("h", kh.hostname);
 
                     try
                     {
@@ -372,7 +374,7 @@ namespace DuckPond
 
         public void UpdateHost(KnownHost kh)
         {
-            String q = "Update dbo.hosts set MAC = '@mac', IP = '@ip', version = '@version', DateAdded='@dateadded' Where Guid = '@guid'";
+            String q = "Update dbo.hosts set MAC = @mac, IP = @ip, version = @version, DateAdded=@dateadded, Hostname= @hostname Where Guid = @guid";
             SqlCommand comm = new SqlCommand(q, cnn);
 
             comm.Parameters.AddWithValue("mac", kh.hostMAC);
@@ -380,6 +382,7 @@ namespace DuckPond
             comm.Parameters.AddWithValue("version", kh.version.Trim());
             comm.Parameters.AddWithValue("dateadded", kh.dateAdded);
             comm.Parameters.AddWithValue("guid", kh.GUID.Trim());
+            comm.Parameters.AddWithValue("hostname", kh.hostname);
 
             comm.ExecuteNonQuery();
         }

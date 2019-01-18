@@ -9,7 +9,7 @@
       Title="Databases">
 
     <Grid Background="White" Height="685" Width="1050">
-        <DataGrid x:Name="DatabaseTable" IsReadOnly="False" HorizontalAlignment="Left" Height="474" Margin="50,40,0,0" VerticalAlignment="Top" Width="825" AutoGenerateColumns="False">
+        <DataGrid x:Name="DatabaseTable" IsReadOnly="False" HorizontalAlignment="Left" Height="474" Margin="50,40,0,0" VerticalAlignment="Top" Width="825" AutoGenerateColumns="False" Visibility="Hidden">
             <DataGrid.Columns>
                 <DataGridTextColumn x:Name="ColPref" Header="Preference" Width="50"/>
                 <DataGridTextColumn x:Name="ColConn" Header="Connection String" Width="770"/>
@@ -18,5 +18,12 @@
         <Button x:Name="BtnAddRow" Content="Add Item" HorizontalAlignment="Left" Margin="924,40,0,0" VerticalAlignment="Top" Width="75" Click="BtnAddRow_Click"/>
         <Button x:Name="BtnCommit" Content="Commit" HorizontalAlignment="Left" Margin="924,125,0,0" VerticalAlignment="Top" Width="75" Click="BtnCommit_Click"/>
         <Button x:Name="BtnRemoveRow" Content="Delete Item" HorizontalAlignment="Left" Margin="924,84,0,0" VerticalAlignment="Top" Width="75" Click="BtnRemoveRow_Click"/>
+        <Frame x:Name="FrameBeforeTable" Background="White" HorizontalAlignment="Left" Width="1050"/>
+        <TextBox x:Name="UsernameField" HorizontalAlignment="Left" Height="23" Margin="300,137,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="190" Cursor="Arrow" FontFamily="Noto Sans"/>
+        <PasswordBox x:Name="PasswordField" HorizontalAlignment="Left" Margin="300,226,0,0" VerticalAlignment="Top" Width="190"/>
+        <Label x:Name="UsernameText" Content="Username" HorizontalAlignment="Left" Margin="215,133,0,0" VerticalAlignment="Top" Width="80" FontFamily="Noto Sans"/>
+        <Label x:Name="PasswordText" Content="Password" HorizontalAlignment="Left" Margin="215,218,0,0" VerticalAlignment="Top" Width="63" FontFamily="Noto Sans"/>
+        <Button x:Name="LoginButton" Content="Submit" HorizontalAlignment="Left" Margin="215,291,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click" Background="Goldenrod"  FontFamily="Noto Sans"/>
+        <Label x:Name="LoginFailText" Content="" HorizontalAlignment="Left" Margin="215,249,0,0" VerticalAlignment="Top" Background="{x:Null}" FontFamily="Noto Sans"/>
     </Grid>
 </Page>

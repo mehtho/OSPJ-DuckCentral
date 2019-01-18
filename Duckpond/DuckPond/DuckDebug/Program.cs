@@ -11,6 +11,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
@@ -19,18 +20,36 @@ namespace DuckDebug
 {
     class Program
     {
-        private static String targetIP = "192.168.1.231";
         static int Main(string[] args)
         {
+            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckClient\\Information.dat");
+
+            var startTimeSpan = TimeSpan.Zero;
+            var periodTimeSpan = TimeSpan.FromSeconds(20);
+
+            var timer = new Timer((e) =>
+            {
+                RoutineCheck();
+
+            }, null, startTimeSpan, periodTimeSpan);
+
             Service s = new Service();
             Console.ReadLine();
             return 0;
         }
 
+        private static void RoutineCheck()
+        {
+            Console.WriteLine("Loading services");
+            ServiceConnectionDelegator.LoadServices();
+            ServicesObject so = ServiceConnectionDelegator.GetService();
+            Console.WriteLine("Using service: "+so.IPAddress);
+        }
+
         public static VersionGUIDPair GetVersionAndGUID()
         {
             IMClient iM = new IMClient();
-            iM.setConnParams(targetIP, 25567);
+            iM.setConnParams(ServiceConnectionDelegator.GetService().IPAddress, 25567);
             iM.SetupConn();
             String aguid = iM.RequestParam(IMClient.IM_GetIdentity);
             iM.Disconnect();
@@ -49,7 +68,7 @@ namespace DuckDebug
         {
             //Send 1 Debug message
             IMClient im = new IMClient();
-            im.setConnParams(targetIP, 25567);
+            im.setConnParams(ServiceConnectionDelegator.GetService().IPAddress, 25567);
             im.SetupConn();
             Console.WriteLine(DoSerialize(kh));
             im.SendSignal(IMClient.IM_NewIdentity, DoSerialize(kh));
@@ -64,7 +83,7 @@ namespace DuckDebug
 
             //Send 1 Debug message
             IMClient im = new IMClient();
-            im.setConnParams(targetIP, 25567);
+            im.setConnParams(ServiceConnectionDelegator.GetService().IPAddress, 25567);
             im.SetupConn();
             im.SendSignal(IMClient.IM_Event, toSend);
         }
@@ -73,7 +92,7 @@ namespace DuckDebug
         {
             String toSend = DoSerialize(ev);
             IMClient im = new IMClient();
-            im.setConnParams(targetIP, 25567);
+            im.setConnParams(ServiceConnectionDelegator.GetService().IPAddress, 25567);
             im.SetupConn();
             im.SendSignal(IMClient.IM_Event, toSend);
         }

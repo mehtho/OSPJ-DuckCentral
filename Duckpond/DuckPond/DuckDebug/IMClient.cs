@@ -9,6 +9,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using DuckServer;
 
 namespace InstantMessenger
 {
@@ -18,7 +19,7 @@ namespace InstantMessenger
         bool _conn = false;    // Is connected/connecting?
 
         public string Server;  // Address of server. In this case - local IP address.
-        public int Port = 25567;
+        public int Port = 25568;
 
         // Start connection thread and login or register.
         void connect(String server, int port)
@@ -107,6 +108,9 @@ namespace InstantMessenger
         public const byte IM_NewIdentity = 30;
         public const byte IM_GetIdentity = 31;
         public const byte IM_GetVersion = 32;
+        public const byte IM_GetMAC = 33;
+        public const byte IM_RegistrationDone = 34;
+        public const byte IM_GetHostname = 35;
         public const byte IM_NewVersionsCheck = 50;
         public const byte IM_NewVersions = 51;
         public const byte IM_AddDatabases = 62;

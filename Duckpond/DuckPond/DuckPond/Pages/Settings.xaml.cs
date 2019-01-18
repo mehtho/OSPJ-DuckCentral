@@ -22,9 +22,13 @@ namespace DuckPond.Pages
     /// </summary>
     public partial class Settings : Page
     {
+        private List<IPTableRow> iptr;
+
         public Settings()
         {
             InitializeComponent();
+            IPCol.Binding = new Binding("IPAddress");
+            PopulateTree();
         }
 
         private void BtnChangePassword_Click(object sender, RoutedEventArgs e)
@@ -69,6 +73,29 @@ namespace DuckPond.Pages
 
             txtInclude.Text = "";
             txtExclude.Text = "";
+            PopulateTree();
         }
+
+        private void PopulateTree()
+        {
+            iptr = new List<IPTableRow>();
+
+            MSSQL ms = new MSSQL();
+            List<String> ips = ms.GetIPs();
+
+            foreach (String ip in ips)
+            {
+                iptr.Add(new IPTableRow {IPAddress=ip });
+            }
+           
+            IPTable.ItemsSource = iptr;
+            IPTable.Items.Refresh();
+        }
+
+        public struct IPTableRow
+        {
+            public string IPAddress { set; get; }
+        }
+
     }
 }

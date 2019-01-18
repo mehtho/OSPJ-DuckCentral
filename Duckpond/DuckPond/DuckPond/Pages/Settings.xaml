@@ -25,5 +25,10 @@
         <TextBox x:Name="txtInclude" HorizontalAlignment="Left" Height="23" Margin="196,119,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="250"/>
         <TextBox x:Name="txtExclude" HorizontalAlignment="Left" Height="23" Margin="196,161,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="250"/>
         <Button x:Name="BtnChangeIPs" Content="Set IPs" HorizontalAlignment="Left" Margin="346,214,0,0" VerticalAlignment="Top" Width="100" Click="BtnChangeIPs_Click"/>
+        <DataGrid x:Name="IPTable"  HorizontalAlignment="Left" Height="300" Margin="476,45,0,0" VerticalAlignment="Top" Width="150">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="IPCol" Header="IP Addresses" Width="125"/>
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Page>

@@ -26,7 +26,7 @@ namespace DuckServer
             }
             else
             {
-                return null;
+                return "Could not get MAC";
             }
         }
 

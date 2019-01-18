@@ -11,12 +11,13 @@
     <Grid Background="White" Height="685" Width="1050">
         <DataGrid x:Name="KnownHostTable" HorizontalAlignment="Left" Height="475" Margin="25,99,0,0" VerticalAlignment="Top" Width="1000" AutoGenerateColumns="False">
             <DataGrid.Columns>
-                <DataGridTextColumn x:Name="ColMac" Header="MAC Address" Width="200"/>
-                <DataGridTextColumn x:Name="ColIP" Header="IP Address" Width="150"/>
-                <DataGridTextColumn x:Name="ColVersion" Header="Running Version" Width="150"/>
+                <DataGridTextColumn x:Name="ColMac" Header="MAC Address" Width="125"/>
+                <DataGridTextColumn x:Name="ColIP" Header="IP Address" Width="125"/>
+                <DataGridTextColumn x:Name="ColVersion" Header="Running Version" Width="100"/>
                 <DataGridTextColumn x:Name="ColStatus" Header="Status" Width="150"/>
-                <DataGridTextColumn x:Name="ColDate" Header="Date Added" Width="150"/>
                 <DataGridTextColumn x:Name="ColGUID" Header="GUID" Width="200"/>
+                <DataGridTextColumn x:Name="ColHostname" Header="Hostname" Width="150"/>
+                <DataGridTextColumn x:Name="ColDate" Header="Date Added" Width="150"/>
             </DataGrid.Columns>
         </DataGrid>
         <Label Content="Last Updated: " HorizontalAlignment="Left" Margin="766,48,0,0" VerticalAlignment="Top" Width="119"/>

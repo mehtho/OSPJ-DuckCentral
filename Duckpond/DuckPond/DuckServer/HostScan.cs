@@ -40,22 +40,23 @@ namespace DuckPond.Resources
                 var client = new TcpClient();
                 var result = client.BeginConnect(host.Trim(), port, null, null);
 
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(4));
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(2));
 
                 if (!success)
                 {
-
+                    Service.count--;
                 }
                 else
                 {
                     tcp.Close();
+                    Console.WriteLine("Found :" + host);
                     Service.IPPS.Add(new IPPlusStatus { IP = host, Status = KnownHost.STATE_ONLINE });
-                    return;
+                    Service.count--;
                 }
             }
             catch(Exception)
             {
-
+                Service.count--;
             }
         }
     }

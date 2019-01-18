@@ -414,7 +414,8 @@ namespace DuckPond
                             reader["IP"].ToString(),
                             reader["Version"].ToString(),
                             (DateTime)reader["DateAdded"],
-                            reader["GUID"].ToString()
+                            reader["GUID"].ToString(),
+                            reader["Hostname"].ToString()
                             );
                         khs.Add(kh);
                     }
@@ -434,7 +435,7 @@ namespace DuckPond
 
         public void AddKnownHost(KnownHost kh)
         {
-            String q = "INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID) Values (@m, @i, @v, @da, @g)";
+            String q = "INSERT INTO dbo.Hosts (MAC, IP, Version, DateAdded, GUID) Values (@m, @i, @v, @da, @g, @h)";
             SqlCommand comm = new SqlCommand(q, cnn);
 
             comm.Parameters.AddWithValue("m", kh.hostMAC);
@@ -442,6 +443,7 @@ namespace DuckPond
             comm.Parameters.AddWithValue("v", kh.version);
             comm.Parameters.AddWithValue("da", kh.dateAdded);
             comm.Parameters.AddWithValue("g", kh.GUID);
+            comm.Parameters.AddWithValue("h",kh.hostname);
 
             comm.ExecuteNonQuery();
         }

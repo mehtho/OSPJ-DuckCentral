@@ -107,6 +107,8 @@ namespace InstantMessenger
         public const byte IM_GetIdentity = 31;
         public const byte IM_GetVersion = 32;
         public const byte IM_GetMAC = 33;
+        public const byte IM_RegistrationDone = 34;
+        public const byte IM_GetHostname = 35;
         public const byte IM_AddDatabases = 62;
         public const byte IM_GetDatabases = 63;
         public const byte IM_NewDatabases = 65;

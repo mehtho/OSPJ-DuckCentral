@@ -45,6 +45,7 @@ namespace DuckServer
         public static int count = 0;
         public static int max = 0;
         public static List<IPPlusStatus> IPPS;
+        public static bool shouldIBeRunning;
 
         public Service()
         {
@@ -68,7 +69,7 @@ namespace DuckServer
             }
         }
 
-        String GetIPFromConfig()
+        static String GetIPFromConfig()
         {
             string path = SQLiteClass.ProgramFilesx86() + "\\DuckServer\\config.cfg";
 
@@ -94,6 +95,7 @@ namespace DuckServer
             public String MAC;
             public String Version;
             public String IP;
+            public String Hostname;
         }
 
         private struct IPPSandThread
@@ -107,10 +109,11 @@ namespace DuckServer
             MSSQL ms = new MSSQL();
             List<KnownHost> khs = new List<KnownHost>();
             List<String> ips = ms.GetIPs();
+            count = ips.Count;
             List<GUIDMACVersionIP> gmvis = new List<GUIDMACVersionIP>();
 
             IPPS = new List<IPPlusStatus>();
-
+            
             List<Thread> threads = new List<Thread>();
             foreach (String ip in ips)
             {
@@ -126,36 +129,46 @@ namespace DuckServer
 
             Console.WriteLine(IPPS.Count+" live hosts");
 
-            foreach (IPPlusStatus iss in IPPS)
+            for (int i = 0; i <= count; i++)
             {
-                if (iss.Status == KnownHost.STATE_ONLINE)
+                try
                 {
-                    try
+                    IPPlusStatus iss = IPPS[i];
+
+                    if (iss.Status == KnownHost.STATE_ONLINE)
                     {
                         IMClient iMC = new IMClient();
                         iMC.setConnParams(iss.IP, 25567);
 
                         iMC.SetupConn();
-                        string guid = iMC.RequestParam(ServiceConn.IM_GetIdentity);
+                        string guid = iMC.RequestParam(IMClient.IM_GetIdentity);
                         iMC.CloseConn();
                         iMC.SetupConn();
 
-                        string version = iMC.RequestParam(ServiceConn.IM_GetVersion);
+                        string version = iMC.RequestParam(IMClient.IM_GetVersion);
                         iMC.CloseConn();
                         iMC.SetupConn();
 
-                        string mac = iMC.RequestParam(ServiceConn.IM_GetMAC);
+                        string mac = iMC.RequestParam(IMClient.IM_GetMAC);
+                        iMC.CloseConn();
+                        iMC.SetupConn();
+
+                        string hostname = iMC.RequestParam(IMClient.IM_GetHostname);
 
                         GUIDMACVersionIP gmvi = new GUIDMACVersionIP
                         {
-                            GUID = guid, IP=iss.IP, MAC=mac, Version=version
+                            GUID = guid,
+                            IP = iss.IP,
+                            MAC = mac,
+                            Version = version,
+                            Hostname = hostname
                         };
                         gmvis.Add(gmvi);
                     }
-                    catch (Exception)
-                    {
+                }
+                catch (Exception)
+                {
 
-                    }
                 }
             }
             return gmvis;
@@ -168,6 +181,7 @@ namespace DuckServer
                 Console.WriteLine("No database connections configured");
                 return;
             }
+
             Console.WriteLine("Getting active hosts");
             List<GUIDMACVersionIP> gmvis = GetActiveHosts();
             Console.WriteLine(gmvis.Count+" running clients");
@@ -213,13 +227,14 @@ namespace DuckServer
                 }
                 if (!found)
                 {
-                    ms.AddKnownHost(new KnownHost(gmvi.MAC, gmvi.IP, gmvi.Version, DateTime.Now, gmvi.GUID));
+                    ms.AddKnownHost(new KnownHost(gmvi.MAC, gmvi.IP, gmvi.Version, DateTime.Now, gmvi.GUID, gmvi.Hostname));
                     IMClient imc = new IMClient();
                     imc.setConnParams(gmvi.IP, 25567);
                     imc.SetupConn();
                     imc.SendSignal(ServiceConn.IM_RegistrationDone, gmvi.GUID);
                     imc.Disconnect();
                 }
+
             }
 
             //Version broadcast
@@ -242,6 +257,56 @@ namespace DuckServer
                 Thread th = new Thread(() => SendNewDataVersion(imclient, serviceTime, whitelistTime));
                 th.Start();
             }
+            shouldIBeRunning = ServiceConcurrencyCheck();
+        }
+
+        private static bool ServiceConcurrencyCheck()
+        {
+            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckServer\\Information.dat");
+            List<ServicesObject> sros = sql.GetServices();
+            String ip = GetIPFromConfig();
+            int myPriority = Int32.MaxValue;
+            bool found = false;
+
+            foreach (ServicesObject sro in sros)
+            {
+                if (sro.IPAddress.Trim().Equals(ip.Trim()))
+                {
+                    myPriority = sro.Preference;
+                    if (myPriority - 1 == 0)
+                    {
+                        return true;
+                    }
+                    found = true;
+                }
+            }
+
+            if (!found)
+            {
+                Console.WriteLine("Could not find "+ip +" in service list");
+            }
+
+            foreach (ServicesObject sro in sros)
+            {
+                //If not me
+                if (!sro.IPAddress.Equals(ip)&&sro.Preference==(myPriority-1))
+                {
+                    try
+                    {
+                        IMClient imc = new IMClient();
+                        imc.setConnParams(sro.IPAddress.Trim(), sro.port);
+                        imc.SetupConn();
+                        imc.Disconnect();
+                        return false;
+                    }
+                    catch
+                    {
+                        return true;
+                    }
+                }
+            }
+            Console.WriteLine("No server list available");
+            return false;
         }
 
         private static void SendNewDataVersion(IMClient imclient, DateTime st, DateTime wt)

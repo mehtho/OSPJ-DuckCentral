@@ -125,6 +125,12 @@ namespace DuckServer
             SQLiteClass sql = new SQLiteClass(ProgramFilesx86() + "\\DuckServer\\Information.dat");
             MSSQL msl;
 
+            if (!Service.shouldIBeRunning)
+            {
+                Console.WriteLine("This server instant should not be handling requests now.");
+                return;
+            }
+
             switch (mode)
             {
                 case IM_Event:
@@ -145,7 +151,7 @@ namespace DuckServer
                         kh.hostIP = socketIp;
                         kh.status = KnownHost.STATE_ONLINE;
                         kh.dateAdded = DateTime.Now;
-
+                        Console.WriteLine("NEW IDENTITY "+kh.hostname);
                         msl = new MSSQL();
                         msl.AddKnownHost(kh);
                         bw.Write(IM_OK);
@@ -305,6 +311,7 @@ namespace DuckServer
         public const byte IM_GetVersion = 32;
         public const byte IM_GetMAC = 33;
         public const byte IM_RegistrationDone = 34;
+        public const byte IM_GetHostname = 35;
         public const byte IM_NewVersionsCheck = 50;
         public const byte IM_NewVersions = 51;
         public const byte IM_AddDatabases = 62;
