@@ -172,7 +172,7 @@ namespace DuckPond
             {
                 while (results.Read())
                 {
-                    if (results["serial"].ToString().Equals(wl.SerialNumber1))
+                    if (results["serial"].ToString().Equals(wl.SerialNumber1)&&results["pid"].ToString().Equals(wl.Pid1)&& results["vid"].ToString().Equals(wl.Vid1))
                     {
                         cnn.Close();
                         return true;
@@ -307,7 +307,7 @@ namespace DuckPond
 
             if (!code.Equals(""))
             {
-                sqltxt += "AND code LIKE @code ";
+                sqltxt += "AND a.code LIKE @code ";
                 cmd.CommandText = sqltxt;
                 cmd.Parameters.AddWithValue("@code", "%" + code + "%");
             }

@@ -12,14 +12,13 @@
     <Grid Background="White" Height="685" Width="1050">
         <DataGrid x:Name="WhitelistTable" IsReadOnly="True" HorizontalAlignment="Left" Height="474" Margin="50,40,0,0" VerticalAlignment="Top" Width="500" AutoGenerateColumns="True">
             <DataGrid.Columns>
-                <DataGridTextColumn x:Name="IDCol" Header="No." Width="50"/>
-                <DataGridTextColumn x:Name="VidCol" Header="Vendor ID" Width="50"/>
-                <DataGridTextColumn x:Name="Pidcol" Header="Product ID" Width="50"/>
+                <DataGridTextColumn x:Name="IDCol" Header="No." Width="50" Visibility="Hidden"/>
+                <DataGridTextColumn x:Name="VidCol" Header="Vendor ID" Width="75"/>
+                <DataGridTextColumn x:Name="Pidcol" Header="Product ID" Width="75"/>
                 <DataGridTextColumn x:Name="SerialCol" Header="Serial No." Width="200"/>
                 <DataGridTextColumn x:Name="DateCol" Header="Date Added" Width="150"/>
             </DataGrid.Columns>
         </DataGrid>
-        <Label x:Name="PageName" Content="Duckpond: Whitelist" HorizontalAlignment="Left" Margin="761,633,0,0" VerticalAlignment="Top" FontSize="24" Width="280" FontFamily="Noto Sans"/>
         <wpfTool:DateTimePicker x:Name="FilterDate1" HorizontalAlignment="Left"  Margin="568,292,0,0" VerticalAlignment="Top" Width="236" Format="Custom" FormatString="dd/MMM/yyyy hh:mm:ss tt"/>
         <wpfTool:DateTimePicker x:Name="FilterDate2" HorizontalAlignment="Left"  Margin="568,322,0,0" VerticalAlignment="Top" Width="236" Format="Custom" FormatString="dd/MMM/yyyy hh:mm:ss tt"/>
         <Button x:Name="BtnFilteredSearch" Content="Search" HorizontalAlignment="Left" Margin="568,365,0,0" VerticalAlignment="Top" Width="74" Click="BtnFilteredSearch_Click"/>

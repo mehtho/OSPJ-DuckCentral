@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DuckPond.Resources;
 using System.Threading;
+using InstantMessenger;
 
 namespace DuckServer
 {
@@ -48,7 +49,7 @@ namespace DuckServer
             {
                 if (spps[i].Status==ServicesObject.STATUS_ONLINE)
                 {
-                    Console.WriteLine(spps[i].service.IPAddress+" is alive!");
+                    
                     return spps[i].service;
                 }
             }

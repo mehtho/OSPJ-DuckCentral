@@ -166,6 +166,7 @@ namespace DuckServer
                 default:
                     break;
             }
+            bw.Write(IM_OK);
         }
 
         public String GetOriginIP()
@@ -248,5 +249,6 @@ namespace DuckServer
         public const byte IM_AddWhiteList = 81;
         public const byte IM_RemoveWhitelist = 82;
         public const byte IM_Debug = 99;
+        public const byte IM_Diagnostic = 200;
     }
 }

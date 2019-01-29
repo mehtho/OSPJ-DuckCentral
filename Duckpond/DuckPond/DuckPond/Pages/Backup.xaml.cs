@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DuckPond.Resources;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Microsoft.SqlServer.Management.Smo;
 
 namespace DuckPond.Pages
 {
@@ -20,14 +23,38 @@ namespace DuckPond.Pages
     /// </summary>
     public partial class Backup : Page
     {
+        SQLiteClass sql;
+
         public Backup()
         {
+            sql = new SQLiteClass();
             InitializeComponent();
+            LblLocation.Content = sql.GetBackupLocation();
         }
 
-        private void BackupLog_Click(object sender, RoutedEventArgs e)
+        private void BtnSetLocation_Click(object sender, RoutedEventArgs e)
         {
-            Content_Frame.Navigate(new BackupLog());
+            var dialog = new CommonOpenFileDialog();
+            dialog.IsFolderPicker = true;
+            CommonFileDialogResult result = dialog.ShowDialog();
+            if (result==CommonFileDialogResult.Ok)
+            {
+                sql.SetBackupLocation(dialog.FileName);
+                LblLocation.Content = dialog.FileName;
+            }
+        }
+
+        private void BtnDoBackup_Click(object sender, RoutedEventArgs e)
+        {
+            DatabaseBackup dtbk = new DatabaseBackup();
+            try
+            {
+                dtbk.DoBackup();
+            }
+            catch (FailedOperationException)
+            {
+                LblError.Content = "Cannot backup Azure Database, use Azure portal instead.";
+            }
         }
     }
 }

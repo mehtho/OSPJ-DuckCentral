@@ -57,6 +57,10 @@ namespace DuckPond
                 SQLiteCommand command7 = new SQLiteCommand(sql7, m_dbConnection);
                 command7.Parameters.AddWithValue("$dt", DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture).ToString());
                 command7.ExecuteNonQuery();
+
+                string sql10 = "CREATE TABLE CachedMessages (Code INT, Message TEXT)";
+                SQLiteCommand command10 = new SQLiteCommand(sql10, m_dbConnection);
+                command10.ExecuteNonQuery();
             }
 
             m_dbConnection = new SQLiteConnection("Data Source="+FileLocation+";Version=3;");
@@ -310,6 +314,51 @@ namespace DuckPond
                 sql.Parameters.AddWithValue("$dt", dt);
                 sql.ExecuteNonQuery();
             }
+        }
+
+        public void CacheMessage(int code, string s)
+        {
+            using (SQLiteCommand cmd = new SQLiteCommand("INSERT INTO CachedMessages (Code, Message) values ($Code, $Message)", m_dbConnection))
+            {
+                cmd.Parameters.AddWithValue("$Code", code);
+                cmd.Parameters.AddWithValue("$Message", s);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public void RemoveCachedMessage(CachedMessage cm)
+        {
+            using (SQLiteCommand cmd = new SQLiteCommand("DELETE FROM CachedMessages WHERE Code=$code AND Message=$Message", m_dbConnection))
+            {
+                cmd.Parameters.AddWithValue("$Code", cm.code);
+                cmd.Parameters.AddWithValue("$Message", cm.message);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public List<CachedMessage> GetCachedMessages()
+        {
+            String sql = "SELECT * FROM CachedMessages";
+            using (SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection))
+            {
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    List<CachedMessage> msgs = new List<CachedMessage>();
+
+                    while (reader.Read())
+                    {
+                        msgs.Add(new CachedMessage {code=(int)reader["code"], message=reader["message"].ToString() });
+                    }
+
+                    return msgs;
+                }
+            }
+        }
+
+        public struct CachedMessage
+        {
+            public string message;
+            public int code;
         }
 
         public const byte GET_SERVICE_LIST = 0;

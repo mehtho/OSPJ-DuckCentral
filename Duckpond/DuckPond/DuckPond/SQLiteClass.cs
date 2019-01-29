@@ -70,6 +70,14 @@ namespace DuckPond
                 command9.Parameters.AddWithValue("$dt", DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture).ToString());
                 command9.ExecuteNonQuery();
 
+                string sql10 = "CREATE TABLE BackupLocation (Location TEXT PRIMARY KEY NOT NULL)";
+                SQLiteCommand command10 = new SQLiteCommand(sql10, m_dbConnection);
+                command10.ExecuteNonQuery();
+
+                string sql11 = "INSERT INTO BackupLocation (Location) VALUES ('C:\')";
+                SQLiteCommand command11 = new SQLiteCommand(sql11, m_dbConnection);
+                command11.ExecuteNonQuery();
+
                 m_dbConnection.ChangePassword("1CF01FBFAA598E96241D4A8D2802E3B39899E34A2B61BC3BEFEEECDCD592A58C4A8E20D54222F9849CE6FEBC2A4CD64E13CE02DAB71CFE4EF7655CF72A28FF06");
             }
 
@@ -343,6 +351,30 @@ namespace DuckPond
             using (SQLiteCommand sql = new SQLiteCommand(s, m_dbConnection))
             {
                 sql.Parameters.AddWithValue("$dt", dt);
+                sql.ExecuteNonQuery();
+            }
+        }
+
+        public String GetBackupLocation()
+        {
+            using (SQLiteCommand sql = new SQLiteCommand("SELECT Location from BackupLocation", m_dbConnection))
+            {
+                using (SQLiteDataReader reader = sql.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        return reader["Location"].ToString();
+                    }
+                    return "";
+                }
+            }
+        }
+
+        public void SetBackupLocation(String s)
+        {
+            using (SQLiteCommand sql = new SQLiteCommand("UPDATE BackupLocation SET Location = $loc", m_dbConnection))
+            {
+                sql.Parameters.AddWithValue("$loc", s);
                 sql.ExecuteNonQuery();
             }
         }

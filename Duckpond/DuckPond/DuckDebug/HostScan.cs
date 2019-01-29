@@ -50,16 +50,14 @@ namespace DuckPond.Resources
                         try
                         {
                             imc.SetupConn();
+                            imc.SendSignal(ServiceConn.IM_Diagnostic, "yes");
+                            imc.Disconnect();
+                            ServiceConnectionDelegator.spps.Add(new ServicePlusStatus { service = so, Status = ServicesObject.STATUS_ONLINE });
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
-                            Console.WriteLine(e.Message);
-                            Console.WriteLine(e.Source);
-                            Console.WriteLine(e.StackTrace);
+                            ServiceConnectionDelegator.spps.Add(new ServicePlusStatus { service = so, Status = ServicesObject.STATUS_OFFLINE });
                         }
-                        
-                        Console.WriteLine(so.IPAddress);
-                        ServiceConnectionDelegator.spps.Add(new ServicePlusStatus { service = so, Status = ServicesObject.STATUS_ONLINE });
                     }
                     else
                     {
@@ -67,7 +65,7 @@ namespace DuckPond.Resources
                     }
                 }
             }
-            catch (SocketException)
+            catch (SocketException s)
             {
                 ServiceConnectionDelegator.spps.Add(new ServicePlusStatus { service = so, Status = ServicesObject.STATUS_OFFLINE });
             }

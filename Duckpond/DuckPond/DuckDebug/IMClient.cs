@@ -10,6 +10,9 @@ using System.Security.Cryptography;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using DuckServer;
+using DuckPond.Models;
+using DuckDebug;
+using DuckPond;
 
 namespace InstantMessenger
 {
@@ -41,6 +44,38 @@ namespace InstantMessenger
         {
             bw.Write(code);
             bw.Write(load);
+
+            byte response = br.ReadByte();
+            if (response == IM_Bad_Credentials)
+            {
+                throw new SocketException();
+            }
+        }
+
+        public static void SendEvent(Events ev)
+        {
+            
+            try
+            {
+                ServicesObject so = ServiceConnectionDelegator.GetService();
+                IMClient imc = new IMClient();
+                imc.setConnParams(so.IPAddress.Trim(), so.port);
+                imc.SetupConn();
+                imc.SendSignal(IM_Event, Program.DoSerialize(ev));
+                imc.Disconnect();
+            }
+            catch(SocketException e)
+            {
+                Console.WriteLine(e.Message);
+                Console.WriteLine(e.Source);
+                Console.WriteLine(e.StackTrace);
+                SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckClient\\Information.dat");
+                sql.CacheMessage(IM_Event, Program.DoSerialize(ev));
+            }
+            catch
+            {
+
+            }
         }
 
         public bool SendSignalWithRet(byte code, string load)
@@ -122,6 +157,7 @@ namespace InstantMessenger
         public const byte IM_AddWhiteList = 81;
         public const byte IM_RemoveWhitelist = 82;
         public const byte IM_Debug = 99;
+        public const byte IM_Diagnostic = 200;
 
         public static bool ValidateCert(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {

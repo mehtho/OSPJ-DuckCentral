@@ -13,17 +13,15 @@ using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DuckServer
 {
     public class Service
     {
-        // Self-signed certificate for SSL encryption.
-        // You can generate one using my generate_cert script in tools directory (OpenSSL is required).
         public X509Certificate2 cert = new X509Certificate2(SQLiteClass.ProgramFilesx86()+"\\DuckServer\\server.pfx", "instant");//EX509!!!
 
-        // IP of this computer. If you are running all clients at the same computer you can use 127.0.0.1 (localhost). 
         public IPAddress ip;
         public int port = 25567;
         public bool running = true;
@@ -34,51 +32,11 @@ namespace DuckServer
             ip = IPAddress.Parse(GetIPFromConfig());
             server = new TcpListener(ip, port);
             server.Start();
+
             Console.WriteLine("[{0}] Client Listener is running properly on " + ip+":"+port, DateTime.Now);
 
             Listen();
         }
-
-        /*private static void RegisterAsNewHost()
-        {
-            if (!(new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckClient\\Information.dat").GetRegistered()))
-            {
-                SendNewHostEntry();
-            }
-        }
-
-        private static void SendNewHostEntry()
-        {
-            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckClient\\Information.dat");
-            if (!sql.GetRegistered())
-            {
-                KnownHost kh = new KnownHost();
-                kh.hostMAC = MACFinder.getMacByIp(GetIPFromConfig());
-                Console.WriteLine("MAC" + kh.hostMAC);
-                kh.version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-                kh.GUID = sql.GetGUID();
-
-                List<ServicesObject> sros = sql.GetServices();
-                foreach(ServicesObject sro in sros)
-                {
-                    try
-                    {
-                        IMClient iM = new IMClient();
-                        iM.setConnParams(sro.IPAddress, sro.port);
-                        iM.SetupConn();
-                        if (iM.SendSignalWithRet(IMClient.IM_NewIdentity, Program.DoSerialize(kh)))
-                        {
-                            sql.SetRegistered(true);
-                        }
-                        iM.Disconnect();
-                    }
-                    catch (SocketException)
-                    {
-
-                    }
-                }
-            }
-        }*/
 
         private static void WriteKey(String localIP)
         {

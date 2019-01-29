@@ -20,7 +20,6 @@
                 <DataGridTextColumn x:Name="ColCode" Header="Alert Code" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
-        <Label x:Name="PageName" Content="Duckpond: Alerts" HorizontalAlignment="Left" Margin="761,633,0,0" VerticalAlignment="Top" FontSize="24" Width="280" FontFamily="Noto Sans"/>
         <wpfTool:DateTimePicker x:Name="FilterDate1" HorizontalAlignment="Left"  Margin="798,374,0,0" VerticalAlignment="Top" Width="236" Format="Custom" FormatString="dd/MMM/yyyy hh:mm:ss tt"/>
         <wpfTool:DateTimePicker x:Name="FilterDate2" HorizontalAlignment="Left"  Margin="798,411,0,0" VerticalAlignment="Top" Width="236" Format="Custom" FormatString="dd/MMM/yyyy hh:mm:ss tt"/>
         <TextBox x:Name="FilterGUID" HorizontalAlignment="Left" Height="24" Margin="798,259,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>

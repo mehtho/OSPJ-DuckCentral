@@ -121,24 +121,19 @@ namespace DuckPond.Pages
         private void BtnAddOne_Click(object sender, RoutedEventArgs e)
         {
             Whitelists wl;
-            if (TextCleaner.CleanHexString(VidAddOne.Text).Length!=4)
+            if ((VidAddOne.Text.Trim().Length==0 || VidAddOne.Text.Trim().Length>4) && (SerialAddOne.Text.Trim().Length > 255 || SerialAddOne.Text.Trim().Length == 0) && (PidAddOne.Text.Trim().Length == 0 || PidAddOne.Text.Trim().Length > 4))
             {
                 VidAddOne.BorderBrush = new SolidColorBrush(Colors.Red);
-                return;
-            }
-            else if(TextCleaner.CleanHexString(PidAddOne.Text).Length!=4)
-            {
+
                 PidAddOne.BorderBrush = new SolidColorBrush(Colors.Red); 
-            }
-            else if(SerialAddOne.Text.Trim().Length > 255 || SerialAddOne.Text.Trim().Length ==0)
-            {
+
                 SerialAddOne.BorderBrush = new SolidColorBrush(Colors.Red);
             }
             else
             {
                 wl = new Whitelists(DateTime.Now, 
-                    TextCleaner.CleanHexString(VidAddOne.Text),
-                    TextCleaner.CleanHexString(PidAddOne.Text),
+                    VidAddOne.Text.Trim().ToUpper(),
+                    PidAddOne.Text.Trim().ToUpper(),
                     SerialAddOne.Text.Trim());
 
                 MSSQL ms = new MSSQL();
@@ -184,6 +179,7 @@ namespace DuckPond.Pages
             Whitelists wl = new Whitelists();
             wl.WhitelistID1 = row.WhitelistID;
             ms.RemoveWhitelist(wl);
+            ms.SetLastUpdated(DateTime.Now, MSSQL.GET_WHITELIST_LIST);
             WhitelistTable.Items.Clear();
             LoadTable();
         }

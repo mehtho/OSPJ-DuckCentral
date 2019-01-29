@@ -23,12 +23,12 @@ namespace DuckServer
         public static void Main(string[] args)
         {
             var startTimeSpan = TimeSpan.Zero;
-            var periodTimeSpan = TimeSpan.FromSeconds(20);
+            var periodTimeSpan = TimeSpan.FromSeconds(10);
 
             var timer = new Timer((e) =>
             {
-                RoutineCheck();
-
+                var task = new Thread(RoutineCheck);
+                task.Start();
             }, null, startTimeSpan, periodTimeSpan);
 
             Service p = new Service();
@@ -46,13 +46,18 @@ namespace DuckServer
         public static int max = 0;
         public static List<IPPlusStatus> IPPS;
         public static bool shouldIBeRunning;
+        public static bool runningScan = false;
 
         public Service()
         {
+            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckServer\\Information.dat");
+            MSSQL mSSQL = new MSSQL();
+            sql.NewServices(mSSQL.GetServices());
             Console.Title = "DuckServer";
             Console.WriteLine("----- DuckServer -----");
             Console.WriteLine("[{0}] Starting server...", DateTime.Now);
             ip = IPAddress.Parse(GetIPFromConfig());
+            Console.WriteLine(ip.ToString());
             server = new TcpListener(ip, port);
             server.Start();
             Console.WriteLine("[{0}] Server is running properly on " + ip+":"+port, DateTime.Now);
@@ -129,7 +134,7 @@ namespace DuckServer
 
             Console.WriteLine(IPPS.Count+" live hosts");
 
-            for (int i = 0; i <= count; i++)
+            for (int i = 0; i < IPPS.Count; i++)
             {
                 try
                 {
@@ -181,83 +186,98 @@ namespace DuckServer
                 Console.WriteLine("No database connections configured");
                 return;
             }
-
-            Console.WriteLine("Getting active hosts");
-            List<GUIDMACVersionIP> gmvis = GetActiveHosts();
-            Console.WriteLine(gmvis.Count+" running clients");
-            MSSQL ms = new MSSQL();
-            List<KnownHost> khs = ms.GetKnownHosts();
-
-            foreach(GUIDMACVersionIP gmvi in gmvis)
+            if (shouldIBeRunning && !runningScan)
             {
-                bool found = false;
-                foreach (KnownHost kh in khs)
+                runningScan = true;
+                Console.WriteLine("Getting active hosts");
+                List<GUIDMACVersionIP> gmvis = GetActiveHosts();
+                Console.WriteLine(gmvis.Count + " running clients");
+                MSSQL ms = new MSSQL();
+                List<KnownHost> khs = ms.GetKnownHosts();
+
+                foreach (GUIDMACVersionIP gmvi in gmvis)
                 {
-                    bool change = false;
-                    if (kh.GUID.Equals(gmvi.GUID))
+                    bool found = false;
+                    foreach (KnownHost kh in khs)
                     {
-                        found = true;
-                        if (!kh.hostMAC.Equals(gmvi.MAC))
+                        bool change = false;
+                        if (kh.GUID.Trim().ToUpper().Equals(gmvi.GUID.Trim().ToUpper()))
                         {
-                            //SendEvent
-                            kh.hostMAC = gmvi.MAC;
+                            found = true;
+                            if (!kh.hostMAC.Trim().ToUpper().Equals(gmvi.MAC.Trim().ToUpper()))
+                            {
+                                ms.AddEvent(new Events("HOST010", "MAC Address changed to " + gmvi.MAC, 2, gmvi.IP, gmvi.GUID, DateTime.Now));
+                                kh.hostMAC = gmvi.MAC;
 
-                            change = true;
-                        }
-                        if (!kh.version.Equals(gmvi.Version))
-                        {
-                            //SendEvent
-                            kh.version = gmvi.Version;
+                                change = true;
+                            }
+                            if (!kh.version.Trim().ToUpper().Equals(gmvi.Version.Trim().ToUpper()))
+                            {
+                                ms.AddEvent(new Events("HOST020", "Version changed to " + gmvi.Version, 1, gmvi.IP, gmvi.GUID, DateTime.Now));
+                                kh.version = gmvi.Version;
 
-                            change = true;
-                        }
-                        if (!kh.hostIP.Equals(gmvi.IP))
-                        {
-                            //SendEvent
-                            kh.hostIP = gmvi.IP;
+                                change = true;
+                            }
+                            if (!kh.hostIP.Trim().ToUpper().Equals(gmvi.IP.Trim().ToUpper()))
+                            {
+                                Console.WriteLine(kh.hostIP.Trim().ToUpper()+" "+ gmvi.IP.Trim().ToUpper());
+                                ms.AddEvent(new Events("HOST030", "IP Changed to " + gmvi.IP, 1, gmvi.IP, gmvi.GUID, DateTime.Now));
+                                kh.hostIP = gmvi.IP;
 
-                            change = true;
+                                change = true;
+                            }
+                            if (change)
+                            {
+                                ms.UpdateHost(kh);
+                            }
+                            break;
                         }
-                        if (change)
-                        {
-                            ms.UpdateHost(kh);
-                        }
-                        break;
                     }
+                    if (!found)
+                    {
+                        try
+                        {
+                            Console.WriteLine("New host "+gmvi.GUID);
+                            IMClient imc = new IMClient();
+                            imc.setConnParams(gmvi.IP, 25567);
+                            imc.SetupConn();
+                            imc.SendSignal(ServiceConn.IM_RegistrationDone, gmvi.GUID);
+                            imc.Disconnect();
+                            ms.AddEvent(new Events("HOST100", "New host added", 2, gmvi.IP, gmvi.GUID, DateTime.Now));
+                            ms.AddKnownHost(new KnownHost(gmvi.MAC, gmvi.IP, gmvi.Version, DateTime.Now, gmvi.GUID, gmvi.Hostname));
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+
                 }
-                if (!found)
+                runningScan = false;
+                //Version broadcast
+
+                ms.GetWhitelists();
+
+                SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckServer\\Information.dat");
+                sql.NewServices(ms.GetServices());
+                sql.SetLastUpdated(SQLiteClass.GET_SERVICE_LIST, ms.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST));
+                sql.NewWhitelists(ms.GetWhitelists());
+                sql.SetLastUpdated(SQLiteClass.GET_WHITELIST_LIST, ms.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST));
+
+                DateTime serviceTime = sql.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST);
+                DateTime whitelistTime = sql.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST);
+
+                foreach (GUIDMACVersionIP gmvi in gmvis)
                 {
-                    ms.AddKnownHost(new KnownHost(gmvi.MAC, gmvi.IP, gmvi.Version, DateTime.Now, gmvi.GUID, gmvi.Hostname));
-                    IMClient imc = new IMClient();
-                    imc.setConnParams(gmvi.IP, 25567);
-                    imc.SetupConn();
-                    imc.SendSignal(ServiceConn.IM_RegistrationDone, gmvi.GUID);
-                    imc.Disconnect();
+                    IMClient imclient = new IMClient();
+                    imclient.setConnParams(gmvi.IP, 25567);
+                    Thread th = new Thread(() => SendNewDataVersion(imclient, serviceTime, whitelistTime));
+                    th.Start();
                 }
-
             }
-
-            //Version broadcast
             
-            ms.GetWhitelists();
-
-            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckServer\\Information.dat");
-            sql.NewServices(ms.GetServices());
-            sql.SetLastUpdated(SQLiteClass.GET_SERVICE_LIST, ms.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST));
-            sql.NewWhitelists(ms.GetWhitelists());
-            sql.SetLastUpdated(SQLiteClass.GET_WHITELIST_LIST, ms.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST));
-
-            DateTime serviceTime = sql.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST);
-            DateTime whitelistTime = sql.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST);
-
-            foreach (GUIDMACVersionIP gmvi in gmvis)
-            {
-                IMClient imclient = new IMClient();
-                imclient.setConnParams(gmvi.IP, 25567);
-                Thread th = new Thread(() => SendNewDataVersion(imclient, serviceTime, whitelistTime));
-                th.Start();
-            }
             shouldIBeRunning = ServiceConcurrencyCheck();
+            Console.WriteLine("The service concurrency check returns that I should be running: "+shouldIBeRunning);
         }
 
         private static bool ServiceConcurrencyCheck()
@@ -301,6 +321,8 @@ namespace DuckServer
                     }
                     catch
                     {
+                        MSSQL ms = new MSSQL();
+                        ms.AddEvent(new Events("HOST200","Server at "+ip+" could not connect to service with preference "+(myPriority-1)+" ,"+sro.IPAddress.Trim(),3,ip,sql.GetGUID(),DateTime.Now));
                         return true;
                     }
                 }

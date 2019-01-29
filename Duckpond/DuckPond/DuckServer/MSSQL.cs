@@ -253,16 +253,20 @@ namespace DuckPond
 
         public void AddEvent(Events e)
         {
-            String q = "INSERT INTO dbo.Events (Code, IP, Date, GUID, Message) Values (@cod, @I, @dat, @gui, @message)";
-            SqlCommand comm = new SqlCommand(q, cnn);
+            Console.WriteLine(e.eventMessage);
+            if (OpenCon())
+            {
+                String q = "INSERT INTO dbo.Events (Code, IP, Date, GUID, Message) Values (@cod, @I, @dat, @gui, @message)";
+                SqlCommand comm = new SqlCommand(q, cnn);
 
-            comm.Parameters.AddWithValue("cod", e.eventCode);
-            comm.Parameters.AddWithValue("I", e.eventIP);
-            comm.Parameters.AddWithValue("dat", e.eventDate);
-            comm.Parameters.AddWithValue("gui", e.eventGUID);
-            comm.Parameters.AddWithValue("message", e.eventMessage);
+                comm.Parameters.AddWithValue("cod", e.eventCode);
+                comm.Parameters.AddWithValue("I", e.eventIP);
+                comm.Parameters.AddWithValue("dat", e.eventDate);
+                comm.Parameters.AddWithValue("gui", e.eventGUID);
+                comm.Parameters.AddWithValue("message", e.eventMessage);
 
-            comm.ExecuteNonQuery();
+                comm.ExecuteNonQuery();
+            }
         }
 
         //Known Host Methods
@@ -292,6 +296,7 @@ namespace DuckPond
                         reader["GUID"].ToString(),
                         reader["Hostname"].ToString()
                         );
+                    khs.Add(kh);
                 }
                 return khs;
             }
@@ -374,17 +379,20 @@ namespace DuckPond
 
         public void UpdateHost(KnownHost kh)
         {
-            String q = "Update dbo.hosts set MAC = @mac, IP = @ip, version = @version, DateAdded=@dateadded, Hostname= @hostname Where Guid = @guid";
-            SqlCommand comm = new SqlCommand(q, cnn);
+            if (OpenCon())
+            {
+                String q = "Update dbo.hosts set MAC = @mac, IP = @ip, version = @version, DateAdded=@dateadded, Hostname= @hostname Where Guid = @guid";
+                SqlCommand comm = new SqlCommand(q, cnn);
 
-            comm.Parameters.AddWithValue("mac", kh.hostMAC);
-            comm.Parameters.AddWithValue("ip", kh.hostIP.Trim());
-            comm.Parameters.AddWithValue("version", kh.version.Trim());
-            comm.Parameters.AddWithValue("dateadded", kh.dateAdded);
-            comm.Parameters.AddWithValue("guid", kh.GUID.Trim());
-            comm.Parameters.AddWithValue("hostname", kh.hostname);
+                comm.Parameters.AddWithValue("mac", kh.hostMAC);
+                comm.Parameters.AddWithValue("ip", kh.hostIP.Trim());
+                comm.Parameters.AddWithValue("version", kh.version.Trim());
+                comm.Parameters.AddWithValue("dateadded", kh.dateAdded);
+                comm.Parameters.AddWithValue("guid", kh.GUID.Trim());
+                comm.Parameters.AddWithValue("hostname", kh.hostname);
 
-            comm.ExecuteNonQuery();
+                comm.ExecuteNonQuery();
+            }
         }
 
         //Service Methods

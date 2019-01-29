@@ -51,6 +51,15 @@ namespace DuckPond
                 SQLiteCommand command9 = new SQLiteCommand(sql9, m_dbConnection);
                 command9.Parameters.AddWithValue("$dt", DateTime.Parse("1/1/2000 12:00:00 AM", System.Globalization.CultureInfo.InvariantCulture).ToString());
                 command9.ExecuteNonQuery();
+
+                string sql10 = "CREATE TABLE Identity (GUID TEXT PRIMARY KEY NOT NULL)";
+                SQLiteCommand command10 = new SQLiteCommand(sql10, m_dbConnection);
+                command10.ExecuteNonQuery();
+
+                string sql11 = "INSERT INTO Identity (GUID) VALUES ($guid)";
+                SQLiteCommand command11 = new SQLiteCommand(sql11, m_dbConnection);
+                command11.Parameters.AddWithValue("$guid", MakeGUID().ToString());
+                command11.ExecuteNonQuery();
             }
 
             m_dbConnection = new SQLiteConnection("Data Source="+FileLocation+";Version=3;");
@@ -76,6 +85,25 @@ namespace DuckPond
                     }
 
                     return "";
+                }
+            }
+        }
+
+        public string GetGUID()
+        {
+            String sql = "SELECT * FROM Identity";
+            using (SQLiteCommand command = new SQLiteCommand(sql, m_dbConnection))
+            {
+                using (SQLiteDataReader reader = command.ExecuteReader())
+                {
+                    List<DatabaseObject> dbs = new List<DatabaseObject>();
+
+                    while (reader.Read())
+                    {
+                        return reader["Guid"].ToString();
+                    }
+
+                    return "Server";
                 }
             }
         }
@@ -355,5 +383,14 @@ namespace DuckPond
 
             return Environment.GetEnvironmentVariable("ProgramFiles");
         }
+
+        public static Guid MakeGUID()
+        {
+            Guid g;
+            // Create and display the value of two GUIDs.
+            g = Guid.NewGuid();
+            return g;
+        }
+
     }
 }

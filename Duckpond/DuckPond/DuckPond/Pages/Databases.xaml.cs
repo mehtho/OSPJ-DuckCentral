@@ -142,9 +142,16 @@ namespace DuckPond.Pages
 
         private void BtnRemoveRow_Click(object sender, RoutedEventArgs e)
         {
-            int rowNumber = DatabaseTable.SelectedIndex;
-            dtrs.RemoveAt(rowNumber);
-            DatabaseTable.Items.Refresh();
+            try
+            {
+                int rowNumber = DatabaseTable.SelectedIndex;
+                dtrs.RemoveAt(rowNumber);
+                DatabaseTable.Items.Refresh();
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+
+            }
         }
 
         public static String DoSerialize(Object o)

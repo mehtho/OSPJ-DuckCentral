@@ -10,10 +10,9 @@
 
     <Grid OpacityMask="Black" Background="White" Width="1200" Margin="0,50,0,0">
         <StackPanel HorizontalAlignment="Left" Height="800" VerticalAlignment="Top" Width="150" Background="#FFFFDB58" Margin="0,0,0,0">
-            <Button x:Name="BtnWhitelists" Content="Whitelists" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnWhitelists_Click"/>
-            <Button x:Name="BtnAlerts" Content="Alerts" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnAlerts_Click"/>
+            <Button x:Name="BtnWhitelists" Content="Blacklists" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnWhitelists_Click"/>
+            <Button x:Name="BtnAlerts" Content="Event Log" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnAlerts_Click"/>
             <Button x:Name="BtnBackups" Content="Backups" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnBackups_Click"/>
-            <Button x:Name="BtnDeployment" Content="Deployment" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnDeployment_Click"/>
             <Button x:Name="BtnSettings" Content="Settings" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnSettings_Click"/>
             <Button x:Name="BtnDatabases" Content="Manage Databases" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnDatabases_Click"/>
             <Button x:Name="BtnServices" Content="Listening Services" BorderBrush="#7F000000" Foreground="Black" Background="#FFFFDB58" Height="60" Click="BtnService_Click"/>

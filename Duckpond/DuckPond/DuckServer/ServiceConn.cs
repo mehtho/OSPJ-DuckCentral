@@ -72,9 +72,8 @@ namespace DuckServer
 
                     Console.WriteLine("logMode: " + logMode);
                     HandleLog(logMode);
-                    
                 }
-                //CloseConn();
+
             }
             catch { CloseConn(); }
         }
@@ -127,52 +126,43 @@ namespace DuckServer
 
             if (!Service.shouldIBeRunning)
             {
-                Console.WriteLine("This server instant should not be handling requests now.");
-                return;
+                Console.WriteLine("This server instance should not be handling requests now.");
             }
 
             switch (mode)
             {
                 case IM_Event:
-                    String eventString = br.ReadString();
-                    Events ev = DeserializeXMLFileToObject<Events>(eventString);
-                    sql.CloseCon();
-                    msl = new MSSQL();
-                    msl.AddEvent(ev);
-                    break;
-                case IM_NewIdentity:
-                    try
+                    if (Service.shouldIBeRunning)
                     {
-                        var socketIp = GetOriginIP();
-
-                        String k = br.ReadString();
-                        KnownHost kh = DeserializeXMLFileToObject<KnownHost>(k);
-
-                        kh.hostIP = socketIp;
-                        kh.status = KnownHost.STATE_ONLINE;
-                        kh.dateAdded = DateTime.Now;
-                        Console.WriteLine("NEW IDENTITY "+kh.hostname);
+                        String eventString = br.ReadString();
+                        Events ev = DeserializeXMLFileToObject<Events>(eventString);
+                        sql.CloseCon();
                         msl = new MSSQL();
-                        msl.AddKnownHost(kh);
+                        msl.AddEvent(ev);
                         bw.Write(IM_OK);
                     }
-                    catch
+                    else
                     {
                         bw.Write(IM_Bad_Credentials);
                     }
                     break;
-                case IM_GetIdentity:
-                    
-                    break;
                 case IM_NewVersions:
-                    IMClient imc = new IMClient();
-                    imc.setConnParams(GetOriginIP(),25567);
-                    imc.SetupConn();
-                    imc.SendSignal(IM_NewVersions, Service.DoSerialize(new DateTimeVersions { ServiceVersion = sql.GetServices(), WhitelistVersion = sql.GetWhitelists(), ServiceDateTime = sql.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST), WhitelistDateTime = sql.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST) }));
+                    if (Service.shouldIBeRunning)
+                    {
+                        IMClient imc = new IMClient();
+                        imc.setConnParams(GetOriginIP(), 25567);
+                        imc.SetupConn();
+                        imc.SendSignal(IM_NewVersions, Service.DoSerialize(new DateTimeVersions { ServiceVersion = sql.GetServices(), WhitelistVersion = sql.GetWhitelists(), ServiceDateTime = sql.GetLastUpdated(SQLiteClass.GET_SERVICE_LIST), WhitelistDateTime = sql.GetLastUpdated(SQLiteClass.GET_WHITELIST_LIST) }));
+                        bw.Write(IM_OK);
+                    }
+                    else
+                    {
+                        bw.Write(IM_Bad_Credentials);
+                    }
                     break;
                 case IM_AddDatabases:
-                    sql.AddDatabase(new DatabaseObject(br.ReadString(), br.ReadInt32()));
-                    sql.CloseCon();
+                        sql.AddDatabase(new DatabaseObject(br.ReadString(), br.ReadInt32()));
+                        bw.Write(IM_OK);
                     break;
                 case IM_GetDatabases:
                     List<DatabaseObject> dbos = sql.GetConnections();
@@ -208,11 +198,21 @@ namespace DuckServer
                     break;
                 case IM_Debug:
                     Console.WriteLine(br.ReadString());
-                    bw.Write(IM_OK);
+                    break;
+                case IM_Diagnostic:
+                    if (!Service.shouldIBeRunning)
+                    {
+                        bw.Write(IM_Bad_Credentials);
+                    }
+                    else
+                    {
+                        bw.Write(IM_OK);
+                    }
                     break;
                 default:
                     break;
             }
+            bw.Write(IM_OK);
         }
 
         public String RequestParam(byte code)
@@ -323,5 +323,6 @@ namespace DuckServer
         public const byte IM_AddWhiteList = 81;
         public const byte IM_RemoveWhitelist = 82;
         public const byte IM_Debug = 99;
+        public const byte IM_Diagnostic = 200;
     }
 }

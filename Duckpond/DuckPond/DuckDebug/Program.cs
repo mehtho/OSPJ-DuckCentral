@@ -38,12 +38,45 @@ namespace DuckDebug
             return 0;
         }
 
+
+
         private static void RoutineCheck()
         {
-            Console.WriteLine("Loading services");
+            SQLiteClass sql = new SQLiteClass(SQLiteClass.ProgramFilesx86() + "\\DuckClient\\Information.dat");
+            List<SQLiteClass.CachedMessage> cms = sql.GetCachedMessages();
+
+            Console.WriteLine("Loading servers");
             ServiceConnectionDelegator.LoadServices();
             ServicesObject so = ServiceConnectionDelegator.GetService();
-            Console.WriteLine("Using service: "+so.IPAddress);
+            if (so == null)
+            {
+                Console.WriteLine("Could not find a server");
+            }
+            else
+            {
+                Console.WriteLine("Using server: " + so.IPAddress);
+            }
+            IMClient.SendEvent(new Events("DEBUG000", "Debug message 0", 0, Service.GetIPFromConfig(), sql.GetGUID(), DateTime.Now));
+
+            foreach (SQLiteClass.CachedMessage cm in cms)
+            {
+                try
+                {
+                    IMClient imc = new IMClient();
+                    imc.setConnParams(so.IPAddress.Trim(), so.port);
+                    Console.WriteLine("Sending a cached event to " + so.IPAddress);
+                    imc.SetupConn();
+                    imc.SendSignal((byte)cm.code, cm.message);
+                    imc.Disconnect();
+                    sql.RemoveCachedMessage(cm);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.Source);
+                    Console.WriteLine(e.StackTrace);
+                }
+            }
         }
 
         public static VersionGUIDPair GetVersionAndGUID()

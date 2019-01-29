@@ -29,7 +29,6 @@ namespace DuckPond
             sidebuttons.Add(BtnAlerts);
             sidebuttons.Add(BtnBackups);
             sidebuttons.Add(BtnDatabases);
-            sidebuttons.Add(BtnDeployment);
             sidebuttons.Add(BtnKnownHosts);
             sidebuttons.Add(BtnServices);
             sidebuttons.Add(BtnWhitelists);
@@ -50,7 +49,6 @@ namespace DuckPond
 
         private void BtnDeployment_Click(object sender, RoutedEventArgs e)
         {
-            HighlightButtons(BtnDeployment);
             Content_Frame.Navigate(new Deployment());
         }
 
